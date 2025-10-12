@@ -15,8 +15,18 @@
 git clone https://github.com/your-username/lightcommit.git
 cd lightcommit
 
-# 安装所有依赖
-pnpm install:all
+# 安装根目录依赖
+pnpm install
+
+# 安装前端依赖
+cd frontend
+pnpm install
+cd ..
+
+# 安装 Hardhat 依赖
+cd hardhat
+pnpm install
+cd ..
 ```
 
 ### 开发

@@ -20,10 +20,6 @@
     "install:all": "pnpm install && pnpm --filter frontend install && pnpm --filter hardhat install",
     "postinstall": "pnpm compile"
   },
-  "workspaces": [
-    "frontend",
-    "hardhat"
-  ],
   "packageManager": "pnpm@10.15.1",
   "keywords": [
     "blockchain",

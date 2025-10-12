@@ -22,5 +22,8 @@
     "typescript": "~5.8.3",
     "viem": "^2.38.0"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.1"
+  }
 }
