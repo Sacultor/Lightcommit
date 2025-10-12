@@ -1,0 +1,53 @@
+{
+  "name": "lightcommit",
+  "version": "0.1.0",
+  "description": "区块链开源贡献证明平台 - 让每一次开源贡献都能在链上留下不可篡改的记录",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter frontend dev",
+    "build": "pnpm --filter frontend build",
+    "start": "pnpm --filter frontend start",
+    "compile": "pnpm --filter hardhat compile",
+    "test": "pnpm run test:frontend && pnpm run test:hardhat",
+    "test:frontend": "pnpm --filter frontend test",
+    "test:hardhat": "pnpm --filter hardhat test",
+    "deploy": "pnpm --filter hardhat deploy",
+    "deploy:sepolia": "pnpm --filter hardhat deploy --network sepolia",
+    "node": "pnpm --filter hardhat node",
+    "clean": "pnpm --filter frontend clean && pnpm --filter hardhat clean",
+    "lint": "pnpm --filter frontend lint",
+    "lint:fix": "pnpm --filter frontend lint --fix",
+    "install:all": "pnpm install && pnpm --filter frontend install && pnpm --filter hardhat install",
+    "postinstall": "pnpm compile"
+  },
+  "workspaces": [
+    "frontend",
+    "hardhat"
+  ],
+  "packageManager": "pnpm@10.15.1",
+  "keywords": [
+    "blockchain",
+    "nft",
+    "sbt",
+    "github",
+    "opensource",
+    "contribution",
+    "proof",
+    "dapp",
+    "nextjs",
+    "hardhat",
+    "ethereum",
+    "web3",
+    "erc1155"
+  ],
+  "author": "LightCommit Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/lightcommit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/lightcommit/issues"
+  },
+  "homepage": "https://github.com/your-username/lightcommit#readme"
+}
