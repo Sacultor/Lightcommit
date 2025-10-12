@@ -17,20 +17,9 @@ cd lightcommit
 
 # 安装根目录依赖
 pnpm install
-
-# 安装前端依赖
-cd frontend
-pnpm install
-cd ..
-
-# 安装 Hardhat 依赖
-cd hardhat
-pnpm install
-cd ..
 ```
 
 ### 开发
-
 ```bash
 # 启动前端开发服务器
 pnpm dev
