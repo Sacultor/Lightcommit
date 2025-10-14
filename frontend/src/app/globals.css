@@ -63,8 +63,13 @@
   }
   
   body {
-    background-color: hsl(var(--background));
+    background-image: url('/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
   }
 }

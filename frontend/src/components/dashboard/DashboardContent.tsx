@@ -31,8 +31,8 @@ export function DashboardContent({
       title: "Mint a new commit",
       description: "Create verifiable proof of your work",
       icon: Plus,
-      isSpecial: true,
-      gradient: "from-black to-gray-800"
+      isSpecial: false,
+      gradient: "from-gray-100 to-gray-200"
     },
     {
       title: "Web3 Portfolio",

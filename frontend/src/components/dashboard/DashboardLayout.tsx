@@ -6,12 +6,17 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,0,0,0.05)_0%,transparent_50%)] pointer-events-none" />
+    <div className="min-h-screen relative">
+      {/* 背景图片容器 - 最底层 */}
+      <div className="fixed inset-0 z-0">
+        {/* 可选的覆盖层，增强可读性但保持背景可见 */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_0%,transparent_50%)] pointer-events-none" />
+      </div>
       
-      {/* Top Navigation - 改进导航栏布局为三栏式 */}
-      <nav className="relative z-10 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+      {/* 内容容器 - 在背景之上 */}
+      <div className="relative z-10 min-h-screen">
+        {/* Top Navigation - 改进导航栏布局为三栏式 */}
+        <nav className="border-b border-gray-200/20 shadow-sm" style={{ backgroundColor: 'rgba(220, 220, 220, 0.3)', backdropFilter: 'blur(27.18px)' }}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo - 左侧 */}
@@ -56,11 +61,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
       </nav>
-      
-      {/* Main Content */}
-      <main className="relative z-10">
-        {children}
-      </main>
+        
+        {/* Main Content */}
+        <main className="relative">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }

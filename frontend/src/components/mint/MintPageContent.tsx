@@ -88,19 +88,28 @@ export default function MintPageContent() {
   }
 
   return (
-    <div className="w-[1152px] mx-auto px-4 py-8" style={{ minHeight: '700px' }}>
+    <div className="w-[1152px] mx-auto px-4 py-12" style={{ minHeight: '700px' }}>
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-[20px] font-bold text-black mb-2" style={{ fontFamily: 'Inter', lineHeight: '1.21' }}>
+      <div className="text-center mb-16">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight" style={{ fontFamily: 'Inter', lineHeight: '1.1' }}>
           {getHeaderTitle()}
         </h1>
-        <p className="text-gray-600 text-sm">
+        <p className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
           {getHeaderDescription()}
         </p>
+        
+        {/* 底部装饰 */}
+        <div className="flex justify-center mt-8">
+          <div className="flex space-x-2">
+            <div className="w-2 h-2 bg-gray-900 rounded-full"></div>
+            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+            <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+          </div>
+        </div>
       </div>
 
       {/* Progress Steps */}
-      <div className="mb-8">
+      <div className="mb-12">
         <MintProgressSteps currentStep={currentStep} />
       </div>
 
