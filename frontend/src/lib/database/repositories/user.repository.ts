@@ -15,7 +15,7 @@ export class UserRepository {
   // 根据 GitHub ID 查找用户
   static async findByGithubId(githubId: string): Promise<User | null> {
     const result = await query(
-      'SELECT * FROM users WHERE github_id = $1',
+      'SELECT * FROM users WHERE "githubId" = $1',
       [githubId]
     );
     
@@ -35,7 +35,7 @@ export class UserRepository {
   // 创建用户
   static async create(userData: CreateUserData): Promise<User> {
     const result = await query(
-      `INSERT INTO users (github_id, username, email, avatar_url, access_token, wallet_address, created_at, updated_at)
+      `INSERT INTO users ("githubId", username, email, "avatarUrl", "accessToken", "walletAddress", "createdAt", "updatedAt")
        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
        RETURNING *`,
       [
@@ -66,11 +66,11 @@ export class UserRepository {
       values.push(userData.email);
     }
     if (userData.avatarUrl !== undefined) {
-      setClause.push(`avatar_url = $${paramIndex++}`);
+      setClause.push(`"avatarUrl" = $${paramIndex++}`);
       values.push(userData.avatarUrl);
     }
     if (userData.walletAddress !== undefined) {
-      setClause.push(`wallet_address = $${paramIndex++}`);
+      setClause.push(`"walletAddress" = $${paramIndex++}`);
       values.push(userData.walletAddress);
     }
 
@@ -78,7 +78,7 @@ export class UserRepository {
       return this.findById(id);
     }
 
-    setClause.push(`updated_at = NOW()`);
+    setClause.push(`"updatedAt" = NOW()`);
     values.push(id);
 
     const result = await query(
@@ -113,14 +113,14 @@ export class UserRepository {
   private static mapRowToUser(row: any): User {
     return {
       id: row.id,
-      githubId: row.github_id,
+      githubId: row.githubId,
       username: row.username,
       email: row.email,
-      avatarUrl: row.avatar_url,
-      accessToken: row.access_token,
-      walletAddress: row.wallet_address,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      avatarUrl: row.avatarUrl,
+      accessToken: row.accessToken,
+      walletAddress: row.walletAddress,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     };
   }
 }
