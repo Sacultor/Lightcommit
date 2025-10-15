@@ -14,14 +14,16 @@ export const getPool = (): Pool => {
       pool = new Pool({
         connectionString: config.url,
         ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 30000,
       });
     } else {
       // 否则使用传统的连接配置
       pool = new Pool({
         host: config.host,
         port: config.port,
-        user: config.username,
-        password: config.password,
+        user: config.username ? String(config.username) : undefined,
+        password: config.password ? String(config.password) : undefined,
         database: config.database,
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       });
@@ -84,10 +86,15 @@ export const closePool = async (): Promise<void> => {
 // 数据库健康检查
 export const healthCheck = async (): Promise<boolean> => {
   try {
+    console.log('🔍 开始数据库健康检查...');
+    console.log('DATABASE_URL 存在:', !!process.env.DATABASE_URL);
+    
     const result = await query('SELECT 1 as health');
+    console.log('✅ 数据库健康检查成功');
     return result.rows.length > 0;
   } catch (error) {
-    console.error('Database health check failed:', error);
+    console.error('❌ 数据库健康检查失败:', error instanceof Error ? error.message : String(error));
+    console.error('错误详情:', error);
     return false;
   }
 };
