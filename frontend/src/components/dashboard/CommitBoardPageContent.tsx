@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { Search, Github } from 'lucide-react'
+import { Search, Github } from 'lucide-react';
 
 export default function CommitBoardPageContent() {
   // Empty commit cards to match Figma design layout
@@ -14,17 +14,17 @@ export default function CommitBoardPageContent() {
         <div className="text-sm text-gray-600 mb-4 text-center">
           Dashboard / your-awesome-project
         </div>
-        
+
         {/* Project Title - 居中对齐 */}
         <h1 className="text-3xl font-bold text-gray-900 mb-2 text-center">
           your-awesome-project
         </h1>
-        
+
         {/* Project Description - 居中对齐 */}
         <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
           some amazing ideas.....
         </p>
-        
+
         {/* Search and Actions - 改进对称性和间距 */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-3xl mx-auto">
           <div className="relative flex-1 w-full max-w-md">
@@ -41,7 +41,7 @@ export default function CommitBoardPageContent() {
           </button>
         </div>
       </div>
-      
+
       {/* Commit Cards Grid - 确保与上方卡片左右边界完全对齐 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {emptyCommits.map((commit, index) => (
@@ -60,5 +60,5 @@ export default function CommitBoardPageContent() {
         ))}
       </div>
     </div>
-  )
+  );
 }

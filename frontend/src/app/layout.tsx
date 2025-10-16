@@ -1,52 +1,9 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Agbalumo, Abel, Montserrat, Aboreto, Abril_Fatface } from "next/font/google";
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const agbalumo = Agbalumo({
-  weight: "400",
-  variable: "--font-agbalumo",
-  subsets: ["latin"],
-});
-
-const abel = Abel({
-  weight: "400",
-  variable: "--font-abel",
-  subsets: ["latin"],
-});
-
-// Using Montserrat as a Gilroy alternative (similar geometric sans-serif)
-// If you have Gilroy font files, see frontend/public/fonts/README.md for setup
-const gilroy = Montserrat({
-  weight: "400",
-  variable: "--font-gilroy",
-  subsets: ["latin"],
-});
-
-const aboreto = Aboreto({
-  weight: "400",
-  variable: "--font-aboreto",
-  subsets: ["latin"],
-});
-
-const abrilFatface = Abril_Fatface({
-  weight: "400",
-  variable: "--font-abril-fatface",
-  subsets: ["latin"],
-});
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Lightcommit - Own Your Contribution",
-  description: "Build your developer portfolio with verifiable, on-chain proof of your work",
+  title: 'Lightcommit',
+  description: 'Own Your Contribution - Build your developer portfolio with verifiable, on-chain proof of your work.',
 };
 
 export default function RootLayout({
@@ -56,10 +13,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${agbalumo.variable} ${abel.variable} ${gilroy.variable} ${aboreto.variable} ${abrilFatface.variable} antialiased`}
-      >
-        {children}
+      <body className="antialiased">
+        {/* 全局背景图片 */}
+        <div
+          className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/background.png)',
+          }}
+        />
+
+        {/* 内容容器 - 在背景之上 */}
+        <div className="relative z-10 min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );

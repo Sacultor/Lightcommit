@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getConfig } from '../../../lib/config';
-import { healthCheck } from '../../../lib/database';
+import { getConfig } from '@/lib/config';
+import { healthCheck } from '@/lib/database';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const config = getConfig();
     const timestamp = new Date().toISOString();
@@ -43,12 +43,12 @@ export async function GET(request: NextRequest) {
         timestamp: new Date().toISOString(),
         error: 'Health check failed',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 // 支持 HEAD 请求用于简单的存活检查
-export async function HEAD(request: NextRequest) {
+export async function HEAD(_request: NextRequest) {
   return new NextResponse(null, { status: 200 });
 }

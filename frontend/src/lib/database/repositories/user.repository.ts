@@ -1,14 +1,14 @@
-import { query, transaction } from '../index';
-import { User, CreateUserData, UpdateUserData } from '../../../types/user';
+import { query } from '@/lib/database/index';
+import { User, CreateUserData, UpdateUserData } from '@/types/user';
 
 export class UserRepository {
   // 根据 ID 查找用户
   static async findById(id: string): Promise<User | null> {
     const result = await query(
       'SELECT * FROM users WHERE id = $1',
-      [id]
+      [id],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToUser(result.rows[0]) : null;
   }
 
@@ -16,9 +16,9 @@ export class UserRepository {
   static async findByGithubId(githubId: string): Promise<User | null> {
     const result = await query(
       'SELECT * FROM users WHERE "githubId" = $1',
-      [githubId]
+      [githubId],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToUser(result.rows[0]) : null;
   }
 
@@ -26,9 +26,9 @@ export class UserRepository {
   static async findByUsername(username: string): Promise<User | null> {
     const result = await query(
       'SELECT * FROM users WHERE username = $1',
-      [username]
+      [username],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToUser(result.rows[0]) : null;
   }
 
@@ -45,9 +45,9 @@ export class UserRepository {
         userData.avatarUrl,
         userData.accessToken,
         userData.walletAddress,
-      ]
+      ],
     );
-    
+
     return this.mapRowToUser(result.rows[0]);
   }
 
@@ -78,14 +78,14 @@ export class UserRepository {
       return this.findById(id);
     }
 
-    setClause.push(`"updatedAt" = NOW()`);
+    setClause.push('"updatedAt" = NOW()');
     values.push(id);
 
     const result = await query(
       `UPDATE users SET ${setClause.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-      values
+      values,
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToUser(result.rows[0]) : null;
   }
 
@@ -93,9 +93,9 @@ export class UserRepository {
   static async delete(id: string): Promise<boolean> {
     const result = await query(
       'DELETE FROM users WHERE id = $1',
-      [id]
+      [id],
     );
-    
+
     return result.rowCount > 0;
   }
 
@@ -103,9 +103,9 @@ export class UserRepository {
   static async findAll(limit = 50, offset = 0): Promise<User[]> {
     const result = await query(
       'SELECT * FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-      [limit, offset]
+      [limit, offset],
     );
-    
+
     return result.rows.map(this.mapRowToUser);
   }
 

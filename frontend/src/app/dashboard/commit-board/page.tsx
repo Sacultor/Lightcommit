@@ -1,10 +1,12 @@
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout'
-import CommitBoardPageContent from '@/components/dashboard/CommitBoardPageContent'
+import Navbar from '@/components/layout/navbar';
+import CommitBoardPageContent from '@/components/dashboard/CommitBoardPageContent';
 
 export default function CommitBoardPage() {
   return (
-    <DashboardLayout>
-      <CommitBoardPageContent />
-    </DashboardLayout>
-  )
+    <Navbar variant="landing" showBorder={true}>
+      <main className="pt-16">
+        <CommitBoardPageContent />
+      </main>
+    </Navbar>
+  );
 }

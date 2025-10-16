@@ -1,4 +1,4 @@
-import { Search, Plus, GitBranch, Star, Users, Activity, Github, Code, Zap } from 'lucide-react'
+import { Search, Plus, Star, Users, Activity, Github, Code } from 'lucide-react';
 
 interface DashboardContentProps {
   statsData?: Array<{
@@ -21,66 +21,66 @@ interface DashboardContentProps {
   }>
 }
 
-export function DashboardContent({ 
-  statsData, 
-  contributionData, 
-  activities 
+export function DashboardContent({
+  statsData: _statsData,
+  contributionData: _contributionData,
+  activities: _activities,
 }: DashboardContentProps) {
   const repositoryCards = [
     {
-      title: "Mint a new commit",
-      description: "Create verifiable proof of your work",
+      title: 'Mint a new commit',
+      description: 'Create verifiable proof of your work',
       icon: Plus,
       isSpecial: false,
-      gradient: "from-gray-100 to-gray-200"
+      gradient: 'from-gray-100 to-gray-200',
     },
     {
-      title: "Web3 Portfolio",
-      description: "Showcase your blockchain projects",
+      title: 'Web3 Portfolio',
+      description: 'Showcase your blockchain projects',
       icon: Star,
       isSpecial: false,
-      gradient: "from-gray-100 to-gray-200"
+      gradient: 'from-gray-100 to-gray-200',
     },
     {
-      title: "Smart Contracts",
-      description: "Solidity development workspace",
+      title: 'Smart Contracts',
+      description: 'Solidity development workspace',
       icon: Code,
       isSpecial: false,
-      gradient: "from-gray-100 to-gray-200"
+      gradient: 'from-gray-100 to-gray-200',
     },
     {
-      title: "DeFi Analytics",
-      description: "Track your DeFi contributions",
+      title: 'DeFi Analytics',
+      description: 'Track your DeFi contributions',
       icon: Activity,
       isSpecial: false,
-      gradient: "from-gray-100 to-gray-200"
+      gradient: 'from-gray-100 to-gray-200',
     },
     {
-      title: "NFT Collections",
-      description: "Manage your digital assets",
+      title: 'NFT Collections',
+      description: 'Manage your digital assets',
       icon: Users,
       isSpecial: false,
-      gradient: "from-gray-100 to-gray-200"
+      gradient: 'from-gray-100 to-gray-200',
     },
     {
-      title: "GitHub Integration",
-      description: "Connect your repositories",
+      title: 'GitHub Integration',
+      description: 'Connect your repositories',
       icon: Github,
       isSpecial: false,
-      gradient: "from-gray-100 to-gray-200"
-    }
-  ]
+      gradient: 'from-gray-100 to-gray-200',
+    },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col justify-center">
       <div className="max-w-7xl mx-auto px-6 py-12 w-full">
         {/* Header Section - 居中对齐 */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">My collections.</h1>
+          <h1 className="text-4xl font-light text-gray-900 mb-4 font-sans">My Dashboard</h1>
           <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
-            It's kinda lonely here. Why don't you create your freshly new collections and start your NFT journey with Lightcommit?
+            It&apos;s kinda lonely here. Why don&apos;t you create your freshly new collections and start your NFT journey with Lightcommit?
           </p>
-          
+
           {/* Search Bar with Glassmorphism - 居中对齐 */}
           <div className="flex justify-center">
             <div className="relative max-w-lg w-full">
@@ -97,21 +97,21 @@ export function DashboardContent({
         {/* Repository Cards Grid - 改进对称性和间距 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 place-items-center max-w-6xl mx-auto">
           {repositoryCards.map((repo, index) => {
-            const Icon = repo.icon
+            const Icon = repo.icon;
             return (
-              <div 
+              <div
                 key={index}
                 className={`group relative p-8 rounded-3xl cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-gray-200/50 w-full max-w-sm ${
-                  repo.isSpecial 
-                    ? 'bg-gradient-to-br from-black to-gray-800 text-white' 
+                  repo.isSpecial
+                    ? 'bg-gradient-to-br from-black to-gray-800 text-white'
                     : 'bg-white/60 backdrop-blur-md hover:bg-white/80'
                 }`}
               >
                 <div className="space-y-6">
                   <div className="flex items-start justify-between">
                     <div className={`p-4 rounded-2xl ${
-                      repo.isSpecial 
-                        ? 'bg-white/20' 
+                      repo.isSpecial
+                        ? 'bg-white/20'
                         : 'bg-gray-100'
                     }`}>
                       <Icon className={`w-6 h-6 ${
@@ -119,7 +119,7 @@ export function DashboardContent({
                       }`} />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <h3 className={`font-semibold text-xl ${
                       repo.isSpecial ? 'text-white' : 'text-gray-900'
@@ -132,15 +132,15 @@ export function DashboardContent({
                       {repo.description}
                     </p>
                   </div>
-                  
+
                   {/* Hover effect overlay */}
                   <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </div>
-  )
+  );
 }

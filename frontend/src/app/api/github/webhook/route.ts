@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GitHubService } from '../../../../lib/services/github.service';
+import { GitHubService } from '@/lib/services/github.service';
 
 export async function POST(request: NextRequest) {
   try {
     // 获取请求头
     const signature = request.headers.get('x-hub-signature-256');
     const event = request.headers.get('x-github-event');
-    
+
     // 检查必需的请求头
     if (!signature) {
       return NextResponse.json(
         { error: 'Missing signature' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!event) {
       return NextResponse.json(
         { error: 'Missing event type' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     if (!isValid) {
       return NextResponse.json(
         { error: 'Invalid signature' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     console.error('GitHub webhook error:', error);
     return NextResponse.json(
       { error: 'Failed to process webhook' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

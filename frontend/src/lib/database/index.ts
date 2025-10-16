@@ -8,7 +8,7 @@ let pool: Pool | null = null;
 export const getPool = (): Pool => {
   if (!pool) {
     const config = getDatabaseConfig();
-    
+
     // 如果有 DATABASE_URL (Supabase)，优先使用
     if (config.url) {
       pool = new Pool({
@@ -42,15 +42,15 @@ export const getClient = async (): Promise<PoolClient> => {
 export const query = async (text: string, params?: unknown[]): Promise<any> => {
   const pool = getPool();
   const start = Date.now();
-  
+
   try {
     const res = await pool.query(text, params);
     const duration = Date.now() - start;
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log('Executed query', { text, duration, rows: res.rowCount });
     }
-    
+
     return res;
   } catch (error) {
     console.error('Database query error:', error);
@@ -61,7 +61,7 @@ export const query = async (text: string, params?: unknown[]): Promise<any> => {
 // 在事务中执行多个查询
 export const transaction = async (callback: (client: PoolClient) => Promise<any>): Promise<any> => {
   const client = await getClient();
-  
+
   try {
     await client.query('BEGIN');
     const result = await callback(client);
@@ -88,7 +88,7 @@ export const healthCheck = async (): Promise<boolean> => {
   try {
     console.log('🔍 开始数据库健康检查...');
     console.log('DATABASE_URL 存在:', !!process.env.DATABASE_URL);
-    
+
     const result = await query('SELECT 1 as health');
     console.log('✅ 数据库健康检查成功');
     return result.rows.length > 0;

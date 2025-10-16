@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ContributionService } from '../../../../lib/services/contribution.service';
-import { AuthService } from '../../../../lib/services/auth.service';
+import { ContributionService } from '@/lib/services/contribution.service';
+import { AuthService } from '@/lib/services/auth.service';
 
 export async function GET(request: NextRequest) {
   try {
     // 验证用户身份
     const authorization = request.headers.get('authorization');
-    
+
     if (!authorization || !authorization.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Missing or invalid authorization header' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     console.error('Get contribution stats error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch contribution statistics' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

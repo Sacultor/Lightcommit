@@ -1,15 +1,13 @@
-import { ContributionRepository } from '../database/repositories/contribution.repository';
-import { RepositoryRepository } from '../database/repositories/repository.repository';
-import { UserRepository } from '../database/repositories/user.repository';
-import { 
-  Contribution, 
-  ContributionType, 
-  ContributionStatus,
-  CreateContributionData 
-} from '../../types/contribution';
-import { Repository, CreateRepositoryData } from '../../types/repository';
-import { User } from '../../types/user';
-import { GitHubWebhookEvent } from '../../types/api';
+import { ContributionRepository } from '@/lib/database/repositories/contribution.repository';
+import { UserRepository } from '@/lib/database/repositories/user.repository';
+import { RepositoryRepository } from '@/lib/database/repositories/repository.repository';
+import {
+  CreateContributionData,
+  ContributionType,
+} from '@/types/contribution';
+import { Repository, CreateRepositoryData } from '@/types/repository';
+import { User } from '@/types/user';
+import { GitHubWebhookEvent } from '@/types/api';
 import { getConfig } from '../config';
 import * as crypto from 'crypto';
 
@@ -18,24 +16,24 @@ export class GitHubService {
   static verifyWebhookSignature(payload: string, signature: string): boolean {
     const config = getConfig();
     const secret = config.github.webhookSecret || '';
-    
+
     const hmac = crypto.createHmac('sha256', secret);
     const digest = 'sha256=' + hmac.update(payload).digest('hex');
-    
+
     return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
   }
 
   // 处理 webhook 事件
   static async handleWebhook(event: string, payload: GitHubWebhookEvent): Promise<void> {
     switch (event) {
-      case 'push':
-        await this.handlePushEvent(payload);
-        break;
-      case 'pull_request':
-        await this.handlePullRequestEvent(payload);
-        break;
-      default:
-        console.log(`Unhandled event: ${event}`);
+    case 'push':
+      await this.handlePushEvent(payload);
+      break;
+    case 'pull_request':
+      await this.handlePullRequestEvent(payload);
+      break;
+    default:
+      console.log(`Unhandled event: ${event}`);
     }
   }
 
@@ -72,7 +70,7 @@ export class GitHubService {
       };
 
       const contribution = await ContributionRepository.create(contributionData);
-      
+
       // 这里可以添加队列逻辑来处理 NFT 铸造
       console.log(`Created contribution ${contribution.id} for commit ${commit.id}`);
     }
@@ -113,7 +111,7 @@ export class GitHubService {
     };
 
     const contribution = await ContributionRepository.create(contributionData);
-    
+
     // 这里可以添加队列逻辑来处理 NFT 铸造
     console.log(`Created contribution ${contribution.id} for PR ${pr.number}`);
   }
@@ -146,9 +144,9 @@ export class GitHubService {
   static async getCommitDetails(owner: string, repo: string, sha: string): Promise<any> {
     const config = getConfig();
     const token = config.github.clientSecret || '';
-    
+
     const url = `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`;
-    
+
     const response = await fetch(url, {
       headers: {
         'Authorization': `token ${token}`,
@@ -167,9 +165,9 @@ export class GitHubService {
   static async getRepositoryInfo(owner: string, repo: string): Promise<any> {
     const config = getConfig();
     const token = config.github.clientSecret || '';
-    
+
     const url = `https://api.github.com/repos/${owner}/${repo}`;
-    
+
     const response = await fetch(url, {
       headers: {
         'Authorization': `token ${token}`,
@@ -188,9 +186,9 @@ export class GitHubService {
   static async getUserRepositories(username: string, accessToken?: string): Promise<any[]> {
     const config = getConfig();
     const token = accessToken || config.github.clientSecret || '';
-    
+
     const url = `https://api.github.com/users/${username}/repos`;
-    
+
     const response = await fetch(url, {
       headers: {
         'Authorization': `token ${token}`,
@@ -209,9 +207,9 @@ export class GitHubService {
   static async getRepositoryContributors(owner: string, repo: string): Promise<any[]> {
     const config = getConfig();
     const token = config.github.clientSecret || '';
-    
+
     const url = `https://api.github.com/repos/${owner}/${repo}/contributors`;
-    
+
     const response = await fetch(url, {
       headers: {
         'Authorization': `token ${token}`,
@@ -228,22 +226,22 @@ export class GitHubService {
 
   // 获取仓库的提交历史
   static async getRepositoryCommits(
-    owner: string, 
-    repo: string, 
-    options: { since?: string; until?: string; author?: string; page?: number; per_page?: number } = {}
+    owner: string,
+    repo: string,
+    options: { since?: string; until?: string; author?: string; page?: number; per_page?: number } = {},
   ): Promise<any[]> {
     const config = getConfig();
     const token = config.github.clientSecret || '';
-    
+
     const params = new URLSearchParams();
     if (options.since) params.append('since', options.since);
     if (options.until) params.append('until', options.until);
     if (options.author) params.append('author', options.author);
     if (options.page) params.append('page', options.page.toString());
     if (options.per_page) params.append('per_page', options.per_page.toString());
-    
+
     const url = `https://api.github.com/repos/${owner}/${repo}/commits?${params.toString()}`;
-    
+
     const response = await fetch(url, {
       headers: {
         'Authorization': `token ${token}`,

@@ -1,14 +1,14 @@
-import { query } from '../index';
-import { Repository, CreateRepositoryData, UpdateRepositoryData } from '../../../types/repository';
+import { query } from '@/lib/database/index';
+import { Repository, CreateRepositoryData, UpdateRepositoryData } from '@/types/repository';
 
 export class RepositoryRepository {
   // 根据 ID 查找仓库
   static async findById(id: string): Promise<Repository | null> {
     const result = await query(
       'SELECT * FROM repositories WHERE id = $1',
-      [id]
+      [id],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToRepository(result.rows[0]) : null;
   }
 
@@ -16,9 +16,9 @@ export class RepositoryRepository {
   static async findByGithubId(githubId: string): Promise<Repository | null> {
     const result = await query(
       'SELECT * FROM repositories WHERE github_id = $1',
-      [githubId]
+      [githubId],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToRepository(result.rows[0]) : null;
   }
 
@@ -26,9 +26,9 @@ export class RepositoryRepository {
   static async findByFullName(fullName: string): Promise<Repository | null> {
     const result = await query(
       'SELECT * FROM repositories WHERE full_name = $1',
-      [fullName]
+      [fullName],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToRepository(result.rows[0]) : null;
   }
 
@@ -45,9 +45,9 @@ export class RepositoryRepository {
         repositoryData.description,
         repositoryData.url,
         repositoryData.isPrivate,
-      ]
+      ],
     );
-    
+
     return this.mapRowToRepository(result.rows[0]);
   }
 
@@ -82,14 +82,14 @@ export class RepositoryRepository {
       return this.findById(id);
     }
 
-    setClause.push(`updated_at = NOW()`);
+    setClause.push('updated_at = NOW()');
     values.push(id);
 
     const result = await query(
       `UPDATE repositories SET ${setClause.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-      values
+      values,
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToRepository(result.rows[0]) : null;
   }
 
@@ -97,9 +97,9 @@ export class RepositoryRepository {
   static async delete(id: string): Promise<boolean> {
     const result = await query(
       'DELETE FROM repositories WHERE id = $1',
-      [id]
+      [id],
     );
-    
+
     return result.rowCount > 0;
   }
 
@@ -107,9 +107,9 @@ export class RepositoryRepository {
   static async findAll(limit = 50, offset = 0): Promise<Repository[]> {
     const result = await query(
       'SELECT * FROM repositories ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-      [limit, offset]
+      [limit, offset],
     );
-    
+
     return result.rows.map(this.mapRowToRepository);
   }
 

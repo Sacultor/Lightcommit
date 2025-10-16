@@ -1,8 +1,8 @@
 // Note: ethers will need to be installed as a dependency
 // import { ethers } from 'ethers';
-import { getConfig } from '../config';
-import { ContributionRepository } from '../database/repositories/contribution.repository';
-import { Contribution, ContributionStatus } from '../../types/contribution';
+import { getConfig } from '@/lib/config';
+import { ContributionRepository } from '@/lib/database/repositories/contribution.repository';
+import { Contribution, ContributionStatus } from '@/types/contribution';
 
 export class BlockchainService {
   private static provider: any = null; // ethers.JsonRpcProvider
@@ -13,7 +13,7 @@ export class BlockchainService {
   static async initializeBlockchain(): Promise<void> {
     try {
       const config = getConfig();
-      
+
       if (!config.blockchain.rpcUrl) {
         throw new Error('RPC URL not configured');
       }
@@ -77,7 +77,7 @@ export class BlockchainService {
         metadataUri,
         {
           gasLimit: 500000,
-        }
+        },
       );
 
       console.log('Minting transaction sent:', tx.hash);
@@ -105,7 +105,7 @@ export class BlockchainService {
   static async uploadMetadataToIPFS(contribution: Contribution): Promise<string> {
     try {
       const config = getConfig();
-      
+
       if (!config.ipfs.apiUrl) {
         throw new Error('IPFS API URL not configured');
       }
@@ -159,7 +159,7 @@ export class BlockchainService {
 
       const result = await response.json();
       const ipfsHash = result.Hash;
-      
+
       return `ipfs://${ipfsHash}`;
     } catch (error) {
       console.error('Failed to upload metadata to IPFS:', error);
@@ -288,7 +288,7 @@ export class BlockchainService {
 
     try {
       const config = getConfig();
-      
+
       // 这里假设合约有一些标准方法
       const contractInfo = {
         address: config.blockchain.contractAddress,

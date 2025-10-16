@@ -1,7 +1,8 @@
 import { UserRepository } from '../database/repositories/user.repository';
-import { User, CreateUserData, UpdateUserData } from '../../types/user';
-import { JwtPayload, LoginResponse, GitHubUser } from '../../types/auth';
+import { User, CreateUserData, UpdateUserData } from '@/types/user';
+import { JwtPayload, LoginResponse, GitHubUser } from '@/types/auth';
 import { getConfig } from '../config';
+import * as crypto from 'crypto';
 
 // 扩展的 GitHub 用户信息，包含访问令牌
 export interface GitHubUserWithToken extends GitHubUser {
@@ -39,19 +40,19 @@ export class AuthService {
   static generateJwt(user: User): string {
     const config = getConfig();
     const secret = config.jwt.secret || 'default-secret';
-    const payload: JwtPayload = { 
-      sub: user.id, 
+    const payload: JwtPayload = {
+      sub: user.id,
       username: user.username,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours
+      exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60), // 24 hours
     };
-    
+
     // 在实际应用中，这里应该使用 JWT 库来签名
     // 这里简化处理，实际应该使用 jsonwebtoken 库
     const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
     const payloadStr = Buffer.from(JSON.stringify(payload)).toString('base64url');
     const signature = this.createSignature(`${header}.${payloadStr}`, secret);
-    
+
     return `${header}.${payloadStr}.${signature}`;
   }
 
@@ -61,7 +62,7 @@ export class AuthService {
       const config = getConfig();
       const secret = config.jwt.secret || 'default-secret';
       const [header, payload, signature] = token.split('.');
-      
+
       // 验证签名
       const expectedSignature = this.createSignature(`${header}.${payload}`, secret);
       if (signature !== expectedSignature) {
@@ -69,14 +70,14 @@ export class AuthService {
       }
 
       const decodedPayload = JSON.parse(Buffer.from(payload, 'base64url').toString());
-      
+
       // 检查过期时间
       if (decodedPayload.exp && decodedPayload.exp < Math.floor(Date.now() / 1000)) {
         return null;
       }
 
       return decodedPayload as JwtPayload;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
@@ -104,7 +105,6 @@ export class AuthService {
   private static createSignature(data: string, secret: string): string {
     // 这里简化处理，实际应该使用 crypto 模块的 HMAC
     // 在浏览器环境中可能需要使用 Web Crypto API
-    const crypto = require('crypto');
     return crypto.createHmac('sha256', secret).update(data).digest('base64url');
   }
 
@@ -113,7 +113,7 @@ export class AuthService {
     const config = getConfig();
     const clientId = config.github.clientId || '';
     const callbackUrl = config.github.callbackUrl || '';
-    
+
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: callbackUrl,
@@ -126,7 +126,7 @@ export class AuthService {
 
   // 生成随机状态字符串
   private static generateState(): string {
-    return Math.random().toString(36).substring(2, 15) + 
+    return Math.random().toString(36).substring(2, 15) +
            Math.random().toString(36).substring(2, 15);
   }
 
@@ -154,7 +154,7 @@ export class AuthService {
     });
 
     const data = await response.json();
-    
+
     if (data.error) {
       throw new Error(`GitHub OAuth error: ${data.error_description}`);
     }

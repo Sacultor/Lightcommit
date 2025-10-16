@@ -1,9 +1,9 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Button } from './ui/button'
-import { ChevronDown } from 'lucide-react'
-import { NFTData } from './ConfigureNFT'
+import { useState } from 'react';
+import { Button } from './ui/button';
+import { ChevronDown } from 'lucide-react';
+import { NFTData } from './ConfigureNFT';
 
 interface PreviewNetworkProps {
   onBack: () => void
@@ -23,27 +23,27 @@ const networks: Network[] = [
     id: 'ethereum',
     name: 'Ethereum Network',
     icon: '🔷',
-    description: 'Main Ethereum blockchain'
+    description: 'Main Ethereum blockchain',
   },
   {
     id: 'polygon',
     name: 'Polygon Network',
     icon: '🟣',
-    description: 'Layer 2 scaling solution'
+    description: 'Layer 2 scaling solution',
   },
   {
     id: 'arbitrum',
     name: 'Arbitrum Network',
     icon: '🔵',
-    description: 'Optimistic rollup'
-  }
-]
+    description: 'Optimistic rollup',
+  },
+];
 
 export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetworkProps) {
-  const [selectedNetwork, setSelectedNetwork] = useState('ethereum')
-  const [showNetworkDropdown, setShowNetworkDropdown] = useState(false)
+  const [selectedNetwork, setSelectedNetwork] = useState('ethereum');
+  const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
 
-  const selectedNetworkData = networks.find(n => n.id === selectedNetwork) || networks[0]
+  const selectedNetworkData = networks.find(n => n.id === selectedNetwork) || networks[0];
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -52,10 +52,10 @@ export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetwo
         <div className="bg-white border-2 border-black rounded-[10px] p-8">
           <div className="space-y-6">
             <div>
-              <label className="block text-[20px] font-bold text-black mb-4" style={{ fontFamily: 'Inter', lineHeight: '1.21' }}>
+              <label className="block text-[20px] font-bold text-black mb-4" style={{ lineHeight: '1.21' }}>
                 Choose Network
               </label>
-              
+
               <div className="relative">
                 <button
                   onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
@@ -64,7 +64,7 @@ export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetwo
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{selectedNetworkData.icon}</span>
                     <div className="text-left">
-                      <div className="text-[15px] font-bold text-black" style={{ fontFamily: 'Inter', lineHeight: '1.21' }}>
+                      <div className="text-[15px] font-bold text-black" style={{ lineHeight: '1.21' }}>
                         {selectedNetworkData.name}
                       </div>
                     </div>
@@ -72,34 +72,34 @@ export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetwo
                   <ChevronDown className={`w-4 h-4 text-black transition-transform ${showNetworkDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
-              {showNetworkDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-black rounded-lg shadow-lg z-10">
-                  {networks.map((network) => (
-                    <button
-                      key={network.id}
-                      onClick={() => {
-                        setSelectedNetwork(network.id)
-                        setShowNetworkDropdown(false)
-                      }}
-                      className={`w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                        selectedNetwork === network.id ? 'bg-gray-100' : ''
-                      }`}
-                    >
-                      <span className="text-2xl">{network.icon}</span>
-                      <div>
-                        <div className="text-lg font-bold text-black">
-                          {network.name}
+                {showNetworkDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-black rounded-lg shadow-lg z-10">
+                    {networks.map((network) => (
+                      <button
+                        key={network.id}
+                        onClick={() => {
+                          setSelectedNetwork(network.id);
+                          setShowNetworkDropdown(false);
+                        }}
+                        className={`w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                          selectedNetwork === network.id ? 'bg-gray-100' : ''
+                        }`}
+                      >
+                        <span className="text-2xl">{network.icon}</span>
+                        <div>
+                          <div className="text-lg font-bold text-black">
+                            {network.name}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {network.description}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-600">
-                          {network.description}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
             {/* Action Buttons */}
             <div className="flex gap-4">
@@ -126,8 +126,8 @@ export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetwo
           <div className="w-full h-[280px] bg-gray-100 border-2 border-gray-300 rounded-[10px] flex items-center justify-center relative">
             {/* Checkered pattern background */}
             <div className="absolute inset-0 opacity-20" style={{
-              backgroundImage: `url("data:image/svg+xml,%3csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='10' height='10' fill='%23000'/%3e%3crect x='10' y='10' width='10' height='10' fill='%23000'/%3e%3c/svg%3e")`,
-              backgroundSize: '20px 20px'
+              backgroundImage: 'url("data:image/svg+xml,%3csvg width=\'20\' height=\'20\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3crect width=\'10\' height=\'10\' fill=\'%23000\'/%3e%3crect x=\'10\' y=\'10\' width=\'10\' height=\'10\' fill=\'%23000\'/%3e%3c/svg%3e")',
+              backgroundSize: '20px 20px',
             }}></div>
           </div>
 
@@ -138,16 +138,16 @@ export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetwo
                 <span className="text-white text-sm font-bold">LC</span>
               </span>
               <div className="text-sm">
-                <div className="font-bold text-black uppercase text-[10px]" style={{ fontFamily: 'Inter', lineHeight: '1.21' }}>
+                <div className="font-bold text-black uppercase text-[10px]" style={{ lineHeight: '1.21' }}>
                   {nftData.title.toUpperCase()}
                 </div>
-                <div className="text-[8px] text-gray-500 mt-1" style={{ fontFamily: 'Inter' }}>
+                <div className="text-[8px] text-gray-500 mt-1">
                   5m ago
                 </div>
               </div>
             </div>
 
-            <div className="text-[10px]" style={{ fontFamily: 'Inter', lineHeight: '1.21' }}>
+            <div className="text-[10px]" style={{ lineHeight: '1.21' }}>
               <div className="font-bold text-black mb-1">Collection: Astral Arcana</div>
             </div>
 
@@ -156,8 +156,7 @@ export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetwo
               {nftData.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[8px] font-bold text-black uppercase"
-                  style={{ fontFamily: 'Inter' }}
+                  className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-[8px] font-bold text-black uppercase font-sans"
                 >
                   {tag}
                 </span>
@@ -169,8 +168,7 @@ export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetwo
           <div className="pt-4">
             <Button
               onClick={onMint}
-              className="w-full h-[40px] bg-black text-white font-bold rounded-[10px] hover:bg-gray-800 text-[12px]"
-              style={{ fontFamily: 'Inter' }}
+              className="w-full h-[40px] bg-black text-white font-bold rounded-[10px] hover:bg-gray-800 text-[12px] font-sans"
             >
               Mint
             </Button>
@@ -178,5 +176,5 @@ export default function PreviewNetwork({ onBack, onMint, nftData }: PreviewNetwo
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AuthService } from '../../../../lib/services/auth.service';
+import { AuthService } from '@/lib/services/auth.service';
 
 export async function GET(request: NextRequest) {
   try {
     // 从请求头获取 Authorization token
     const authorization = request.headers.get('authorization');
-    
+
     if (!authorization || !authorization.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Missing or invalid authorization header' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     console.error('Profile fetch error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch user profile' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

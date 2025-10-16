@@ -1,8 +1,8 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
+import { useState } from 'react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 interface ConfigureNFTProps {
   onNext: (data: NFTData) => void
@@ -16,38 +16,38 @@ export interface NFTData {
 }
 
 export default function ConfigureNFT({ onNext, initialData }: ConfigureNFTProps) {
-  const [title, setTitle] = useState(initialData?.title || 'feat: Implement user authentication and dark mode')
-  const [description, setDescription] = useState(initialData?.description || 'Detailed description of your contribution.')
-  const [tags, setTags] = useState<string[]>(initialData?.tags || ['Typescript', 'feature'])
-  const [newTag, setNewTag] = useState('')
+  const [title, setTitle] = useState(initialData?.title || 'feat: Implement user authentication and dark mode');
+  const [description, setDescription] = useState(initialData?.description || 'Detailed description of your contribution.');
+  const [tags, setTags] = useState<string[]>(initialData?.tags || ['Typescript', 'feature']);
+  const [newTag, setNewTag] = useState('');
 
   const addTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()])
-      setNewTag('')
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove))
-  }
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
 
   const handleNext = () => {
     onNext({
       title,
       description,
-      tags
-    })
-  }
+      tags,
+    });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (isFormValid) {
-      handleNext()
+      handleNext();
     }
-  }
+  };
 
-  const isFormValid = title.trim() && description.trim() && tags.length > 0
+  const isFormValid = title.trim() && description.trim() && tags.length > 0;
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
@@ -55,38 +55,38 @@ export default function ConfigureNFT({ onNext, initialData }: ConfigureNFTProps)
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <div>
-            <label className="block text-[20px] font-bold text-black mb-2" style={{ fontFamily: 'Inter', lineHeight: '1.21' }}>
+            <label className="block text-[20px] font-bold text-black mb-2" style={{ lineHeight: '1.21' }}>
               NFT Title
             </label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-[632px] h-[50px] border-2 border-black rounded-[10px] px-4 text-[15px] font-bold uppercase"
-              style={{ fontFamily: 'Inter', lineHeight: '1.21' }}
+              style={{ lineHeight: '1.21' }}
               placeholder="feat: Implement user authentication and dark mode"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-[20px] font-bold text-black mb-2" style={{ fontFamily: 'Inter', lineHeight: '1.21' }}>
+            <label className="block text-[20px] font-bold text-black mb-2" style={{ lineHeight: '1.21' }}>
               Description
             </label>
             <textarea
               value={description}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
               className="w-[632px] min-h-[100px] border-2 border-black rounded-[10px] px-4 py-3 text-[10px] font-bold uppercase resize-none focus:outline-none focus:ring-2 focus:ring-black"
-              style={{ fontFamily: 'Inter', lineHeight: '1.21', color: 'rgba(0, 0, 0, 0.25)' }}
+              style={{ lineHeight: '1.21', color: 'rgba(0, 0, 0, 0.25)' }}
               placeholder="Detailed description of your contribution."
             />
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-[20px] font-bold text-black mb-2" style={{ fontFamily: 'Inter', lineHeight: '1.21' }}>
+            <label className="block text-[20px] font-bold text-black mb-2" style={{ lineHeight: '1.21' }}>
               Tags
             </label>
-            
+
             {/* Existing Tags */}
             <div className="flex flex-wrap gap-2 mb-3">
               {tags.map((tag, index) => (
@@ -133,5 +133,5 @@ export default function ConfigureNFT({ onNext, initialData }: ConfigureNFTProps)
         </div>
       </div>
     </div>
-  )
+  );
 }

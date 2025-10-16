@@ -1,12 +1,12 @@
-import { query, transaction } from '../index';
-import { 
-  Contribution, 
-  CreateContributionData, 
-  UpdateContributionData, 
+import { query } from '@/lib/database/index';
+import {
+  Contribution,
+  CreateContributionData,
+  UpdateContributionData,
   QueryContributionParams,
   ContributionType,
-  ContributionStatus 
-} from '../../../types/contribution';
+  ContributionStatus,
+} from '@/types/contribution';
 
 export class ContributionRepository {
   // 根据 ID 查找贡献
@@ -17,9 +17,9 @@ export class ContributionRepository {
        LEFT JOIN users u ON c.user_id = u.id
        LEFT JOIN repositories r ON c.repository_id = r.id
        WHERE c.id = $1`,
-      [id]
+      [id],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;
   }
 
@@ -31,9 +31,9 @@ export class ContributionRepository {
        LEFT JOIN users u ON c.user_id = u.id
        LEFT JOIN repositories r ON c.repository_id = r.id
        WHERE c.github_id = $1`,
-      [githubId]
+      [githubId],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;
   }
 
@@ -44,22 +44,22 @@ export class ContributionRepository {
     let paramIndex = 1;
 
     const conditions = [];
-    
+
     if (params.type) {
       conditions.push(`c.type = $${paramIndex++}`);
       values.push(params.type);
     }
-    
+
     if (params.status) {
       conditions.push(`c.status = $${paramIndex++}`);
       values.push(params.status);
     }
-    
+
     if (params.userId) {
       conditions.push(`c.user_id = $${paramIndex++}`);
       values.push(params.userId);
     }
-    
+
     if (params.repositoryId) {
       conditions.push(`c.repository_id = $${paramIndex++}`);
       values.push(params.repositoryId);
@@ -79,9 +79,9 @@ export class ContributionRepository {
        ${whereClause}
        ORDER BY c.created_at DESC
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
-      values
+      values,
     );
-    
+
     return result.rows.map(this.mapRowToContribution);
   }
 
@@ -95,9 +95,9 @@ export class ContributionRepository {
        WHERE c.user_id = $1
        ORDER BY c.created_at DESC
        LIMIT $2 OFFSET $3`,
-      [userId, limit, offset]
+      [userId, limit, offset],
     );
-    
+
     return result.rows.map(this.mapRowToContribution);
   }
 
@@ -118,9 +118,9 @@ export class ContributionRepository {
         contributionData.description,
         contributionData.url,
         JSON.stringify(contributionData.metadata || {}),
-      ]
+      ],
     );
-    
+
     return this.mapRowToContribution(result.rows[0]);
   }
 
@@ -155,14 +155,14 @@ export class ContributionRepository {
       return this.findById(id);
     }
 
-    setClause.push(`updated_at = NOW()`);
+    setClause.push('updated_at = NOW()');
     values.push(id);
 
     const result = await query(
       `UPDATE contributions SET ${setClause.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-      values
+      values,
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;
   }
 
@@ -170,7 +170,7 @@ export class ContributionRepository {
   static async getStats(userId?: string): Promise<any> {
     let whereClause = '';
     const values: unknown[] = [];
-    
+
     if (userId) {
       whereClause = 'WHERE user_id = $1';
       values.push(userId);
@@ -187,9 +187,9 @@ export class ContributionRepository {
         COUNT(CASE WHEN type = 'pull_request' THEN 1 END) as pull_requests,
         COUNT(CASE WHEN type = 'issue' THEN 1 END) as issues
        FROM contributions ${whereClause}`,
-      values
+      values,
     );
-    
+
     return result.rows[0];
   }
 

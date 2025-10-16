@@ -1,10 +1,10 @@
-import { ContributionRepository } from '../database/repositories/contribution.repository';
-import { 
-  Contribution, 
+import { ContributionRepository } from '@/lib/database/repositories/contribution.repository';
+import {
+  Contribution,
   QueryContributionParams,
   ContributionType,
-  ContributionStatus 
-} from '../../types/contribution';
+  ContributionStatus,
+} from '@/types/contribution';
 
 export class ContributionService {
   // 获取所有贡献
@@ -72,7 +72,7 @@ export class ContributionService {
   // 获取全局统计信息
   static async getGlobalStats(): Promise<any> {
     const allContributions = await ContributionRepository.findAll({});
-    
+
     return {
       totalContributions: allContributions.length,
       typeDistribution: this.calculateTypeDistribution(allContributions),
@@ -85,18 +85,18 @@ export class ContributionService {
 
   // 搜索贡献
   static async searchContributions(
-    searchTerm: string, 
+    searchTerm: string,
     filters: QueryContributionParams = {},
     limit = 50,
-    offset = 0
+    offset = 0,
   ): Promise<Contribution[]> {
     // 这里简化实现，实际应该在数据库层面进行全文搜索
     const allContributions = await ContributionRepository.findAll(filters, 1000, 0);
-    
-    const filteredContributions = allContributions.filter(contribution => 
+
+    const filteredContributions = allContributions.filter(contribution =>
       contribution.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contribution.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contribution.contributor.toLowerCase().includes(searchTerm.toLowerCase())
+      contribution.contributor.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
     return filteredContributions.slice(offset, offset + limit);
@@ -168,7 +168,7 @@ export class ContributionService {
 
       const stats = contributorStats[contribution.contributor];
       stats.totalContributions++;
-      
+
       if (contribution.status === ContributionStatus.MINTED) {
         stats.mintedContributions++;
       }
@@ -188,14 +188,14 @@ export class ContributionService {
     startDate.setDate(startDate.getDate() - days);
 
     const allContributions = await ContributionRepository.findAll({});
-    
+
     const filteredContributions = allContributions.filter(contribution => {
       const contributionDate = new Date(contribution.createdAt);
       return contributionDate >= startDate && contributionDate <= endDate;
     });
 
     const dailyStats: { [key: string]: number } = {};
-    
+
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const dateKey = d.toISOString().split('T')[0];
       dailyStats[dateKey] = 0;
