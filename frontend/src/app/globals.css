@@ -10,6 +10,11 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-agbalumo: var(--font-agbalumo);
+  --font-abel: var(--font-abel);
+  --font-gilroy: var(--font-gilroy);
+  --font-aboreto: var(--font-aboreto);
+  --font-abril-fatface: var(--font-abril-fatface);
 }
 
 @media (prefers-color-scheme: dark) {
