@@ -22,7 +22,7 @@ export default function Hero() {
             </h1>
           </div>
 
-          <p className="py-12 text-3xl text-gray-900 leading-relaxed max-w-md">
+          <p className="pt-12 text-3xl text-gray-900 leading-relaxed max-w-md">
               Build your developer portfolio <br />
               with verifiable, on-chain proof of <br />
               your work.
@@ -33,30 +33,28 @@ export default function Hero() {
           </a>
 
           {/* Decorative mouse icon */}
-          <div className="-mt-12">
-            <svg width="215" height="240" viewBox="0 0 215 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g filter="url(#filter0_d_1008_3431)">
-                <path fillRule="evenodd" clipRule="evenodd" d="M134.728 121.163C120.228 111.943 101.165 114.715 89.8916 127.683C77.9196 141.455 78.6513 162.145 91.5663 175.037L124.971 208.383C141.842 225.224 169.621 223.606 184.423 204.919C199.114 186.371 194.524 159.185 174.557 146.488L134.728 121.163Z" stroke="black" strokeWidth="2.8" strokeLinejoin="round"/>
-                <path d="M143.55 127.25L97.7199 181.15" stroke="black" strokeWidth="2.1" strokeLinejoin="round"/>
-                <path d="M88.7846 128.831L101.338 139.997" stroke="black" strokeWidth="2.1" strokeLinejoin="round"/>
-                <rect width="10.5" height="24.5" rx="5.25" transform="matrix(-0.656059 0.75471 0.75471 0.656059 104.609 136.125)" fill="black"/>
-                <path d="M88.7847 128.831C88.7847 128.831 48.2513 99.4903 76.4488 79.2118C98.5149 63.3427 30.1347 60.9362 19.8458 44.1562" stroke="black" strokeWidth="2.1"/>
-                <path d="M5.448 5.18848C5.44794 1.13059 4.66317 -0.801576 4.23022 2.96973C3.46081 9.6734 9.69898 18.7231 24.5056 27.499C25.3079 27.9745 26.1069 28.4349 26.9001 28.8789C24.4994 29.794 22.441 30.9217 20.863 32.2383C16.9368 35.514 16.0944 39.8323 18.9402 44.6875L20.7517 43.625C18.4344 39.6713 19.0567 36.4797 22.2078 33.8506C23.9542 32.3935 26.4407 31.1663 29.4011 30.2344C42.066 36.8748 52.9433 39.0942 55.863 34.0273C57.7656 30.7256 55.4987 28.1969 50.7605 27.0049C46.7375 25.9929 40.9812 25.8934 35.4041 26.7305C33.3711 27.0356 31.4311 27.4517 29.6287 27.9717C28.2947 27.2616 26.9406 26.5016 25.5769 25.6934C11.8862 17.579 5.448 9.24664 5.448 5.18848ZM35.7156 28.8076C41.0361 28.0091 46.5188 28.104 50.2478 29.042C53.8417 29.9461 55.0285 31.269 54.0437 32.9785C52.1013 36.3495 43.1661 34.6566 32.4548 29.416C33.5041 29.1793 34.594 28.976 35.7156 28.8076Z" fill="black"/>
-              </g>
-              <defs>
-                <filter id="filter0_d_1008_3431" x="0.167236" y="0.944336" width="198.281" height="228.498" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                  <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-                  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                  <feOffset dy="4"/>
-                  <feGaussianBlur stdDeviation="2"/>
-                  <feComposite in2="hardAlpha" operator="out"/>
-                  <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-                  <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1008_3431"/>
-                  <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1008_3431" result="shape"/>
-                </filter>
-              </defs>
-            </svg>
-          </div>
+          <svg width="215" height="240" viewBox="0 0 215 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g filter="url(#filter0_d_1008_3431)">
+              <path fillRule="evenodd" clipRule="evenodd" d="M134.728 121.163C120.228 111.943 101.165 114.715 89.8916 127.683C77.9196 141.455 78.6513 162.145 91.5663 175.037L124.971 208.383C141.842 225.224 169.621 223.606 184.423 204.919C199.114 186.371 194.524 159.185 174.557 146.488L134.728 121.163Z" stroke="black" strokeWidth="2.8" strokeLinejoin="round"/>
+              <path d="M143.55 127.25L97.7199 181.15" stroke="black" strokeWidth="2.1" strokeLinejoin="round"/>
+              <path d="M88.7846 128.831L101.338 139.997" stroke="black" strokeWidth="2.1" strokeLinejoin="round"/>
+              <rect width="10.5" height="24.5" rx="5.25" transform="matrix(-0.656059 0.75471 0.75471 0.656059 104.609 136.125)" fill="black"/>
+              <path d="M88.7847 128.831C88.7847 128.831 48.2513 99.4903 76.4488 79.2118C98.5149 63.3427 30.1347 60.9362 19.8458 44.1562" stroke="black" strokeWidth="2.1"/>
+              <path d="M5.448 5.18848C5.44794 1.13059 4.66317 -0.801576 4.23022 2.96973C3.46081 9.6734 9.69898 18.7231 24.5056 27.499C25.3079 27.9745 26.1069 28.4349 26.9001 28.8789C24.4994 29.794 22.441 30.9217 20.863 32.2383C16.9368 35.514 16.0944 39.8323 18.9402 44.6875L20.7517 43.625C18.4344 39.6713 19.0567 36.4797 22.2078 33.8506C23.9542 32.3935 26.4407 31.1663 29.4011 30.2344C42.066 36.8748 52.9433 39.0942 55.863 34.0273C57.7656 30.7256 55.4987 28.1969 50.7605 27.0049C46.7375 25.9929 40.9812 25.8934 35.4041 26.7305C33.3711 27.0356 31.4311 27.4517 29.6287 27.9717C28.2947 27.2616 26.9406 26.5016 25.5769 25.6934C11.8862 17.579 5.448 9.24664 5.448 5.18848ZM35.7156 28.8076C41.0361 28.0091 46.5188 28.104 50.2478 29.042C53.8417 29.9461 55.0285 31.269 54.0437 32.9785C52.1013 36.3495 43.1661 34.6566 32.4548 29.416C33.5041 29.1793 34.594 28.976 35.7156 28.8076Z" fill="black"/>
+            </g>
+            <defs>
+              <filter id="filter0_d_1008_3431" x="0.167236" y="0.944336" width="198.281" height="228.498" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                <feOffset dy="4"/>
+                <feGaussianBlur stdDeviation="2"/>
+                <feComposite in2="hardAlpha" operator="out"/>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1008_3431"/>
+                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1008_3431" result="shape"/>
+              </filter>
+            </defs>
+          </svg>
 
           {/* Decorative dots - 3 columns */}
           <div className="absolute right-0 bottom-0 ">
