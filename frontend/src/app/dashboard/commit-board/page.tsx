@@ -4,7 +4,7 @@ import CommitBoardPageContent from '@/components/dashboard/CommitBoardPageConten
 export default function CommitBoardPage() {
   return (
     <Navbar variant="landing" showBorder={true}>
-      <main className="pt-16">
+      <main className="">
         <CommitBoardPageContent />
       </main>
     </Navbar>

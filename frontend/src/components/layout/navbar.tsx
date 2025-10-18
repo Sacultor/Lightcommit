@@ -72,7 +72,7 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
       }} />
 
       <nav className={cn(
-          'fixed top-0 w-full z-10',
+          'relative z-10',
           isLanding ? 'bg-transparent' : 'border-b border-gray-200/20 shadow-sm',
           isDashboard && 'bg-gray-300/30 backdrop-blur-[27px]'
         )}>
@@ -168,7 +168,6 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
           <div className="w-9/10 mx-auto border-b-2 border-black"></div>
         )}
       </nav>
-      <div className="pt-24"/>
 
       {/* Children content */}
       {children}

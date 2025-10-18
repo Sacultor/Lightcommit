@@ -4,7 +4,7 @@ import { ProfileContent } from '@/components/profile/ProfileContent';
 export default function ProfilePage() {
   return (
     <Navbar variant="landing" showBorder={true}>
-      <main className="pt-16">
+      <main className="">
         <ProfileContent />
       </main>
     </Navbar>

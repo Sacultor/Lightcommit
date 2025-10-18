@@ -1,6 +1,6 @@
 export default function Hero() {
   return (
-    <main className="relative z-10 max-w-7xl mx-auto px-6 pt-20">
+    <main className="relative z-10 max-w-7xl mx-auto px-6 mt-16">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         {/* Left Column - Text Content */}
         <div className="space-y-8 relative">
