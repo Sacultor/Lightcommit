@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated } from '@/lib/auth';
+import { cn } from '@/lib/utils';
 
 interface NavbarProps {
   variant?: 'landing' | 'dashboard';
@@ -70,14 +71,18 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
         `,
       }} />
 
-      <nav className={`relative z-10 ${isLanding ? 'bg-transparent' : 'border-b border-gray-200/20 shadow-sm'} ${isDashboard ? 'bg-gray-300/30 backdrop-blur-[27px]' : ''}`}>
+      <nav className={cn(
+          'fixed top-0 w-full z-10',
+          isLanding ? 'bg-transparent' : 'border-b border-gray-200/20 shadow-sm',
+          isDashboard && 'bg-gray-300/30 backdrop-blur-[27px]'
+        )}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className={`flex items-center space-x-3 ${isDashboard ? 'flex-1' : ''}`}>
               {isLanding ? (
                 <>
-                  <div className="w-[37px] h-[30px] relative">
+                  <div className="w-10 h-10 relative">
                     <Image
                       src="/logo.png"
                       alt="Lightcommit Logo"
@@ -87,7 +92,7 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
                       className="object-contain"
                     />
                   </div>
-                  <span className="text-[20px] font-normal text-[#111111] uppercase leading-[80px]">
+                  <span onClick={() => router.push('/')} className="text-xl font-normal text-[#111111] uppercase leading-20 cursor-pointer">
                     Lightcommit
                   </span>
                 </>
@@ -105,11 +110,11 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
             <div className={`flex items-center ${isDashboard ? 'justify-center flex-1' : 'space-x-12'}`}>
               {isDashboard ? (
                 <div className="hidden md:flex items-center space-x-10">
-                  <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight hover:text-gray-600 transition-colors duration-200 relative group font-sans">
+                  <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight hover:text-gray-600 transition-colors duration-200 relative group font-sans cursor-pointer">
                     Discover
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-200 group-hover:w-full"></span>
                   </button>
-                  <button onClick={handleProfilesClick} className="text-gray-600 font-extralight hover:text-gray-900 transition-colors duration-200 relative group font-sans">
+                  <button onClick={handleProfilesClick} className="text-gray-600 font-extralight hover:text-gray-900 transition-colors duration-200 relative group font-sans cursor-pointer">
                     Profiles
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-200 group-hover:w-full"></span>
                   </button>
@@ -120,13 +125,13 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
                 </div>
               ) : (
                 <>
-                  <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors">
+                  <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
                     Discover
                   </button>
-                  <button onClick={handleProfilesClick} className="text-gray-900 font-extralight text-[27px] hover:text-gray-600 transition-colors">
+                  <button onClick={handleProfilesClick} className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
                     Profiles
                   </button>
-                  <a href="#docs" className="text-gray-900 font-extralight text-[27px] hover:text-gray-600 transition-colors">
+                  <a href="#docs" className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
                     Docs
                   </a>
                 </>
@@ -163,6 +168,7 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
           <div className="w-9/10 mx-auto border-b-2 border-black"></div>
         )}
       </nav>
+      <div className="pt-24"/>
 
       {/* Children content */}
       {children}
