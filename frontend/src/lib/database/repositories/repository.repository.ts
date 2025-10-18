@@ -100,7 +100,7 @@ export class RepositoryRepository {
       [id],
     );
 
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // 获取所有仓库

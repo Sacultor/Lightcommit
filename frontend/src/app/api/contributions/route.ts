@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ContributionService } from '@/lib/services/contribution.service';
 import { AuthService } from '@/lib/services/auth.service';
-import { QueryContributionParams } from '@/types/contribution';
+import { QueryContributionParams, ContributionType, ContributionStatus } from '@/types/contribution';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,11 +34,11 @@ export async function GET(request: NextRequest) {
 
     // 添加可选的查询参数
     if (searchParams.get('type')) {
-      query.type = searchParams.get('type') as any;
+      query.type = searchParams.get('type') as ContributionType;
     }
 
     if (searchParams.get('status')) {
-      query.status = searchParams.get('status') as any;
+      query.status = searchParams.get('status') as ContributionStatus;
     }
 
     if (searchParams.get('repositoryId')) {

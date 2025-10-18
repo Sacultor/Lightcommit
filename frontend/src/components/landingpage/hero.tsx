@@ -28,9 +28,9 @@ export default function Hero() {
               your work.
           </p>
 
-          <button className="px-8 py-3 border-2 border-black rounded-[39px] backdrop-blur-[13.591px] bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(220,220,220,0.4)] transition-all duration-200 font-normal text-black text-[18px] shadow-lg hover:shadow-xl">
+          <a href="/api/auth/github" className="px-8 py-3 border-2 border-black rounded-[39px] backdrop-blur-[13.591px] bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(220,220,220,0.4)] transition-all duration-200 font-normal text-black text-[18px] shadow-lg hover:shadow-xl">
             <span className="underline decoration-solid">Start with GitHub</span>
-          </button>
+          </a>
 
           {/* Decorative mouse icon */}
           <div className="-mt-12">

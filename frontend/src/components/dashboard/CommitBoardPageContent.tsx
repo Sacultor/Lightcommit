@@ -1,10 +1,23 @@
 'use client';
 
 import { Search, Github } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { authFetch, isAuthenticated } from '@/lib/auth';
+import { Contribution } from '@/types/contribution';
 
 export default function CommitBoardPageContent() {
   // Empty commit cards to match Figma design layout
   const emptyCommits = Array(6).fill({});
+  const [myContributions, setMyContributions] = useState<Contribution[]>([]);
+
+  useEffect(() => {
+    if (!isAuthenticated()) return;
+
+    authFetch('/api/contributions/my')
+      .then(res => res.json())
+      .then(data => setMyContributions(data?.data || []))
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-8 py-8 w-full">
@@ -40,6 +53,11 @@ export default function CommitBoardPageContent() {
             <span>view on Github</span>
           </button>
         </div>
+      </div>
+
+      {/* 最小联通：显示已加载的贡献数量，便于确认数据链路 */}
+      <div className="text-sm text-gray-500 mb-4 text-center">
+        Loaded contributions: {myContributions.length}
       </div>
 
       {/* Commit Cards Grid - 确保与上方卡片左右边界完全对齐 */}

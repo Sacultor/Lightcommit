@@ -1,5 +1,9 @@
+'use client';
+
 import Image from 'next/image';
 import { ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { isAuthenticated } from '@/lib/auth';
 
 interface NavbarProps {
   variant?: 'landing' | 'dashboard';
@@ -10,6 +14,21 @@ interface NavbarProps {
 export default function Navbar({ variant = 'landing', showBorder = true, children }: NavbarProps) {
   const isLanding = variant === 'landing';
   const isDashboard = variant === 'dashboard';
+  const router = useRouter();
+
+  const handleDiscoverClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    router.push('/dashboard');
+  };
+
+  const handleProfilesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!isAuthenticated()) {
+      window.location.href = '/api/auth/github';
+      return;
+    }
+    router.push('/profiles');
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -86,14 +105,14 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
             <div className={`flex items-center ${isDashboard ? 'justify-center flex-1' : 'space-x-12'}`}>
               {isDashboard ? (
                 <div className="hidden md:flex items-center space-x-10">
-                  <a href="#" className="text-gray-900 font-extralight hover:text-gray-600 transition-colors duration-200 relative group font-sans">
+                  <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight hover:text-gray-600 transition-colors duration-200 relative group font-sans">
                     Discover
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-200 group-hover:w-full"></span>
-                  </a>
-                  <a href="#" className="text-gray-600 font-extralight hover:text-gray-900 transition-colors duration-200 relative group font-sans">
+                  </button>
+                  <button onClick={handleProfilesClick} className="text-gray-600 font-extralight hover:text-gray-900 transition-colors duration-200 relative group font-sans">
                     Profiles
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-200 group-hover:w-full"></span>
-                  </a>
+                  </button>
                   <a href="#" className="text-gray-600 font-extralight hover:text-gray-900 transition-colors duration-200 relative group font-sans">
                     Docs
                     <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-200 group-hover:w-full"></span>
@@ -101,12 +120,12 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
                 </div>
               ) : (
                 <>
-                  <a href="#discover" className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors">
+                  <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors">
                     Discover
-                  </a>
-                  <a href="#profiles" className="text-gray-900 font-extralight text-[27px] hover:text-gray-600 transition-colors">
+                  </button>
+                  <button onClick={handleProfilesClick} className="text-gray-900 font-extralight text-[27px] hover:text-gray-600 transition-colors">
                     Profiles
-                  </a>
+                  </button>
                   <a href="#docs" className="text-gray-900 font-extralight text-[27px] hover:text-gray-600 transition-colors">
                     Docs
                   </a>
@@ -131,9 +150,9 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
                 </>
               ) : (
                 /* CTA Button */
-                <button className="px-6 py-2.5 border-2 border-black rounded-[39px] backdrop-blur-[13.591px] bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(220,220,220,0.4)] transition-all duration-200 font-normal text-black text-[18px]">
+                <a href="/api/auth/github" className="px-6 py-2.5 border-2 border-black rounded-[39px] backdrop-blur-[13.591px] bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(220,220,220,0.4)] transition-all duration-200 font-normal text-black text-[18px]">
                   <span className="decoration-solid">Start with GitHub</span>
-                </button>
+                </a>
               )}
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { Pool, PoolClient } from 'pg';
+import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import { getDatabaseConfig } from '../config';
 
 // 数据库连接池
@@ -39,7 +39,7 @@ export const getClient = async (): Promise<PoolClient> => {
 };
 
 // 执行查询
-export const query = async (text: string, params?: unknown[]): Promise<any> => {
+export const query = async <T extends QueryResultRow = QueryResultRow>(text: string, params?: unknown[]): Promise<QueryResult<T>> => {
   const pool = getPool();
   const start = Date.now();
 
@@ -59,7 +59,7 @@ export const query = async (text: string, params?: unknown[]): Promise<any> => {
 };
 
 // 在事务中执行多个查询
-export const transaction = async (callback: (client: PoolClient) => Promise<any>): Promise<any> => {
+export const transaction = async <T>(callback: (client: PoolClient) => Promise<T>): Promise<T> => {
   const client = await getClient();
 
   try {

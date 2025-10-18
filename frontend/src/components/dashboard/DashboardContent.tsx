@@ -1,4 +1,8 @@
+'use client';
+
 import { Search, Plus, Star, Users, Activity, Github, Code } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { isAuthenticated } from '@/lib/auth';
 
 interface DashboardContentProps {
   statsData?: Array<{
@@ -26,6 +30,24 @@ export function DashboardContent({
   contributionData: _contributionData,
   activities: _activities,
 }: DashboardContentProps) {
+  const router = useRouter();
+
+  const handleCardClick = (title: string) => {
+    if (title === 'Web3 Portfolio') {
+      if (!isAuthenticated()) {
+        window.location.href = '/api/auth/github';
+        return;
+      }
+      router.push('/profiles');
+    } else if (title === 'Mint a new commit') {
+      if (!isAuthenticated()) {
+        window.location.href = '/api/auth/github';
+        return;
+      }
+      router.push('/dashboard/mint');
+    }
+    // 可以为其他卡片添加不同的跳转逻辑
+  };
   const repositoryCards = [
     {
       title: 'Mint a new commit',
@@ -101,6 +123,7 @@ export function DashboardContent({
             return (
               <div
                 key={index}
+                onClick={() => handleCardClick(repo.title)}
                 className={`group relative p-8 rounded-3xl cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-gray-200/50 w-full max-w-sm ${
                   repo.isSpecial
                     ? 'bg-gradient-to-br from-black to-gray-800 text-white'

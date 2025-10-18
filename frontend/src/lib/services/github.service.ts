@@ -8,6 +8,13 @@ import {
 import { Repository, CreateRepositoryData } from '@/types/repository';
 import { User } from '@/types/user';
 import { GitHubWebhookEvent } from '@/types/api';
+import {
+  GitHubPushPayload,
+  GitHubPullRequestPayload,
+  GitHubApiRepository,
+  GitHubApiCommit,
+  GitHubApiContributor,
+} from '@/types/github';
 import { getConfig } from '../config';
 import * as crypto from 'crypto';
 
@@ -27,10 +34,10 @@ export class GitHubService {
   static async handleWebhook(event: string, payload: GitHubWebhookEvent): Promise<void> {
     switch (event) {
     case 'push':
-      await this.handlePushEvent(payload);
+      await this.handlePushEvent(payload as unknown as GitHubPushPayload);
       break;
     case 'pull_request':
-      await this.handlePullRequestEvent(payload);
+      await this.handlePullRequestEvent(payload as unknown as GitHubPullRequestPayload);
       break;
     default:
       console.log(`Unhandled event: ${event}`);
@@ -38,7 +45,7 @@ export class GitHubService {
   }
 
   // 处理 push 事件
-  private static async handlePushEvent(payload: any): Promise<void> {
+  private static async handlePushEvent(payload: GitHubPushPayload): Promise<void> {
     const commits = payload.commits || [];
     const repository = payload.repository;
 
@@ -77,7 +84,7 @@ export class GitHubService {
   }
 
   // 处理 pull request 事件
-  private static async handlePullRequestEvent(payload: any): Promise<void> {
+  private static async handlePullRequestEvent(payload: GitHubPullRequestPayload): Promise<void> {
     if (payload.action !== 'closed' || !payload.pull_request.merged) {
       return;
     }
@@ -117,7 +124,7 @@ export class GitHubService {
   }
 
   // 查找或创建仓库
-  private static async findOrCreateRepository(repoData: any): Promise<Repository> {
+  private static async findOrCreateRepository(repoData: GitHubApiRepository): Promise<Repository> {
     let repo = await RepositoryRepository.findByGithubId(repoData.id.toString());
 
     if (!repo) {
@@ -141,7 +148,7 @@ export class GitHubService {
   }
 
   // 获取提交详情
-  static async getCommitDetails(owner: string, repo: string, sha: string): Promise<any> {
+  static async getCommitDetails(owner: string, repo: string, sha: string): Promise<GitHubApiCommit> {
     const config = getConfig();
     const token = config.github.clientSecret || '';
 
@@ -162,7 +169,7 @@ export class GitHubService {
   }
 
   // 获取仓库信息
-  static async getRepositoryInfo(owner: string, repo: string): Promise<any> {
+  static async getRepositoryInfo(owner: string, repo: string): Promise<GitHubApiRepository> {
     const config = getConfig();
     const token = config.github.clientSecret || '';
 
@@ -183,7 +190,7 @@ export class GitHubService {
   }
 
   // 获取用户的仓库列表
-  static async getUserRepositories(username: string, accessToken?: string): Promise<any[]> {
+  static async getUserRepositories(username: string, accessToken?: string): Promise<GitHubApiRepository[]> {
     const config = getConfig();
     const token = accessToken || config.github.clientSecret || '';
 
@@ -204,7 +211,7 @@ export class GitHubService {
   }
 
   // 获取仓库的贡献者列表
-  static async getRepositoryContributors(owner: string, repo: string): Promise<any[]> {
+  static async getRepositoryContributors(owner: string, repo: string): Promise<GitHubApiContributor[]> {
     const config = getConfig();
     const token = config.github.clientSecret || '';
 
@@ -229,7 +236,7 @@ export class GitHubService {
     owner: string,
     repo: string,
     options: { since?: string; until?: string; author?: string; page?: number; per_page?: number } = {},
-  ): Promise<any[]> {
+  ): Promise<GitHubApiCommit[]> {
     const config = getConfig();
     const token = config.github.clientSecret || '';
 

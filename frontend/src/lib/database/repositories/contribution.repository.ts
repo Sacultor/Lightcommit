@@ -6,7 +6,22 @@ import {
   QueryContributionParams,
   ContributionType,
   ContributionStatus,
+  ContributionStats,
 } from '@/types/contribution';
+
+
+
+// 数据库查询结果接口
+interface DbContributionStats {
+  total: string;
+  minted: string;
+  pending: string;
+  minting: string;
+  failed: string;
+  commits: string;
+  pull_requests: string;
+  issues: string;
+}
 
 export class ContributionRepository {
   // 根据 ID 查找贡献
@@ -167,7 +182,7 @@ export class ContributionRepository {
   }
 
   // 获取统计信息
-  static async getStats(userId?: string): Promise<any> {
+  static async getStats(userId?: string): Promise<ContributionStats> {
     let whereClause = '';
     const values: unknown[] = [];
 
@@ -190,7 +205,26 @@ export class ContributionRepository {
       values,
     );
 
-    return result.rows[0];
+    const dbStats = result.rows[0] as DbContributionStats;
+
+    // 转换为正确的ContributionStats格式
+    return {
+      totalContributions: parseInt(dbStats.total),
+      mintedContributions: parseInt(dbStats.minted),
+      pendingContributions: parseInt(dbStats.pending),
+      monthlyStats: [], // 这里需要额外的查询来获取月度统计
+      typeDistribution: [
+        { type: 'commit', count: parseInt(dbStats.commits) },
+        { type: 'pull_request', count: parseInt(dbStats.pull_requests) },
+        { type: 'issue', count: parseInt(dbStats.issues) },
+      ],
+      statusDistribution: [
+        { status: 'minted', count: parseInt(dbStats.minted) },
+        { status: 'pending', count: parseInt(dbStats.pending) },
+        { status: 'minting', count: parseInt(dbStats.minting) },
+        { status: 'failed', count: parseInt(dbStats.failed) },
+      ],
+    };
   }
 
   // 将数据库行映射为 Contribution 对象

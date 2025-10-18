@@ -80,3 +80,48 @@ export interface UpdateContributionData {
   metadataUri?: string;
   metadata?: Record<string, unknown>;
 }
+
+// 统计相关的类型定义
+export interface MonthlyStats {
+  month: string;
+  count: number;
+}
+
+export interface TypeDistribution {
+  type: string;
+  count: number;
+}
+
+export interface StatusDistribution {
+  status: string;
+  count: number;
+}
+
+export interface ContributorDistribution {
+  contributor: string;
+  count: number;
+}
+
+export interface TopContributor {
+  contributor: string;
+  totalContributions: number;
+  mintedContributions: number;
+  types: { [key in ContributionType]?: number };
+}
+
+export interface ContributionStats {
+  totalContributions: number;
+  mintedContributions: number;
+  pendingContributions: number;
+  monthlyStats: MonthlyStats[];
+  typeDistribution: TypeDistribution[];
+  statusDistribution: StatusDistribution[];
+  contributorDistribution?: ContributorDistribution[];
+  topContributors?: TopContributor[];
+}
+
+export interface ContributionTrends {
+  dailyContributions: { date: string; count: number }[];
+  totalContributions: number;
+  averageDaily: number;
+}
