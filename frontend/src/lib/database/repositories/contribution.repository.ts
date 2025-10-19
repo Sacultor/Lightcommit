@@ -1,4 +1,4 @@
-import { query } from '@/lib/database/index';
+import { getDatabaseClient } from '@/lib/database/index';
 import {
   Contribution,
   CreateContributionData,
@@ -118,67 +118,53 @@ export class ContributionRepository {
 
   // 创建贡献
   static async create(contributionData: CreateContributionData): Promise<Contribution> {
-    const result = await query(
-      `INSERT INTO contributions (
-        github_id, type, user_id, repository_id, contributor, title, description, url, metadata, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
-      RETURNING *`,
-      [
-        contributionData.githubId,
-        contributionData.type,
-        contributionData.userId,
-        contributionData.repositoryId,
-        contributionData.contributor,
-        contributionData.title,
-        contributionData.description,
-        contributionData.url,
-        JSON.stringify(contributionData.metadata || {}),
-      ],
-    );
+    const supabase = getDatabaseClient();
+    const { data, error } = await supabase
+      .from('contributions')
+      .insert({
+        githubId: contributionData.githubId,
+        type: contributionData.type,
+        userId: contributionData.userId,
+        repositoryId: contributionData.repositoryId,
+        contributor: contributionData.contributor,
+        title: contributionData.title,
+        description: contributionData.description,
+        url: contributionData.url,
+        metadata: contributionData.metadata || {},
+      })
+      .select()
+      .single();
 
-    return this.mapRowToContribution(result.rows[0]);
+    if (error) throw error;
+
+    return this.mapRowToContribution(data);
   }
 
   // 更新贡献
   static async update(id: string, contributionData: UpdateContributionData): Promise<Contribution | null> {
-    const setClause = [];
-    const values = [];
-    let paramIndex = 1;
+    const supabase = getDatabaseClient();
+    
+    const updateData: any = {};
+    if (contributionData.status !== undefined) updateData.status = contributionData.status;
+    if (contributionData.transactionHash !== undefined) updateData.transactionHash = contributionData.transactionHash;
+    if (contributionData.tokenId !== undefined) updateData.tokenId = contributionData.tokenId;
+    if (contributionData.metadataUri !== undefined) updateData.metadataUri = contributionData.metadataUri;
+    if (contributionData.metadata !== undefined) updateData.metadata = contributionData.metadata;
 
-    if (contributionData.status !== undefined) {
-      setClause.push(`status = $${paramIndex++}`);
-      values.push(contributionData.status);
-    }
-    if (contributionData.transactionHash !== undefined) {
-      setClause.push(`transaction_hash = $${paramIndex++}`);
-      values.push(contributionData.transactionHash);
-    }
-    if (contributionData.tokenId !== undefined) {
-      setClause.push(`token_id = $${paramIndex++}`);
-      values.push(contributionData.tokenId);
-    }
-    if (contributionData.metadataUri !== undefined) {
-      setClause.push(`metadata_uri = $${paramIndex++}`);
-      values.push(contributionData.metadataUri);
-    }
-    if (contributionData.metadata !== undefined) {
-      setClause.push(`metadata = $${paramIndex++}`);
-      values.push(JSON.stringify(contributionData.metadata));
-    }
-
-    if (setClause.length === 0) {
+    if (Object.keys(updateData).length === 0) {
       return this.findById(id);
     }
 
-    setClause.push('updated_at = NOW()');
-    values.push(id);
+    const { data, error } = await supabase
+      .from('contributions')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
 
-    const result = await query(
-      `UPDATE contributions SET ${setClause.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-      values,
-    );
+    if (error) throw error;
 
-    return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;
+    return data ? this.mapRowToContribution(data) : null;
   }
 
   // 获取统计信息
