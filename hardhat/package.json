@@ -29,6 +29,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@nomicfoundation/hardhat-network-helpers": "^3.0.1"
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.1",
+    "@openzeppelin/contracts": "4.9.6"
   }
 }
