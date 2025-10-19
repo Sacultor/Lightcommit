@@ -2,7 +2,7 @@
 
 import { Search, Github } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { authFetch, isAuthenticated } from '@/lib/auth';
+import { AuthService } from '@/lib/services/auth.service';
 import { Contribution } from '@/types/contribution';
 
 export default function CommitBoardPageContent() {
@@ -11,12 +11,20 @@ export default function CommitBoardPageContent() {
   const [myContributions, setMyContributions] = useState<Contribution[]>([]);
 
   useEffect(() => {
-    if (!isAuthenticated()) return;
+    const loadContributions = async () => {
+      try {
+        const { user } = await AuthService.getUser();
+        if (!user) return;
 
-    authFetch('/api/contributions/my')
-      .then(res => res.json())
-      .then(data => setMyContributions(data?.data || []))
-      .catch(console.error);
+        // 这里需要实现获取贡献的 API 调用
+        // 暂时使用空数组
+        setMyContributions([]);
+      } catch (error) {
+        console.error('获取贡献失败:', error);
+      }
+    };
+
+    loadContributions();
   }, []);
 
   return (

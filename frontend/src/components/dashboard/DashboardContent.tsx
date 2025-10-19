@@ -2,7 +2,6 @@
 
 import { Search, Plus, Star, Users, Activity, Github, Code } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/lib/auth';
 
 interface DashboardContentProps {
   statsData?: Array<{

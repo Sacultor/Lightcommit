@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Github, Calendar, Wallet } from 'lucide-react';
-import { authFetch, getAuthToken } from '@/lib/auth';
+import { AuthService } from '@/lib/services/auth.service';
 import Image from 'next/image';
 
 interface UserProfile {
@@ -22,29 +22,37 @@ export function ProfileContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = getAuthToken();
-
-    if (!token) {
-      // 直接重定向到登录页面
-      window.location.href = '/api/auth/github';
-      return;
-    }
-
-    authFetch('/api/auth/profile')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('获取用户资料失败');
+    const loadProfile = async () => {
+      try {
+        const { user, error } = await AuthService.getUser();
+        
+        if (error || !user) {
+          // 直接重定向到登录页面
+          window.location.href = '/api/auth/github';
+          return;
         }
-        return response.json();
-      })
-      .then(data => {
-        setProfile(data);
+
+        // 从用户信息构建 profile 对象
+        const profileData: UserProfile = {
+          id: user.id,
+          githubId: user.user_metadata?.user_name || user.user_metadata?.preferred_username || '',
+          username: user.user_metadata?.user_name || user.user_metadata?.preferred_username || '',
+          email: user.email,
+          avatarUrl: user.user_metadata?.avatar_url,
+          walletAddress: undefined, // 需要从数据库获取
+          createdAt: user.created_at,
+          updatedAt: user.updated_at || user.created_at
+        };
+
+        setProfile(profileData);
         setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '获取用户资料失败');
         setLoading(false);
-      });
+      }
+    };
+
+    loadProfile();
   }, []);
 
   if (loading) {
