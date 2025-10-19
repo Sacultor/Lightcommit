@@ -2,7 +2,6 @@
 
 import { HeaderSimple } from '@/components/header-simple';
 import { FooterSimple } from '@/components/footer-simple';
-import { JoinUs } from '@/components/join-us';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Clock, Shield, Lock, FileText, DollarSign } from 'lucide-react';
 
@@ -153,16 +152,6 @@ export default function RoadmapPage() {
               ))}
             </div>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <JoinUs titleSize="large" />
-          </motion.div>
         </div>
       </main>
       <FooterSimple />
