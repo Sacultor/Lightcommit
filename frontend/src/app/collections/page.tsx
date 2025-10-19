@@ -17,7 +17,7 @@ export default function CollectionsPage() {
       creator: '0xAbc, EFG',
       collection: 'Astral Arcana',
       time: '5m ago',
-      imageUrl: '/assets/images/avatar-1.jpg',
+      imageUrl: '/assets/images/avatar-5.jpg',
     },
     {
       id: '2',
@@ -25,7 +25,7 @@ export default function CollectionsPage() {
       creator: '0xAbc, EFG',
       collection: 'Astral Arcana',
       time: '5m ago',
-      imageUrl: '/assets/images/avatar-2.jpg',
+      imageUrl: '/assets/images/avatar-6.jpg',
     },
     {
       id: '3',
@@ -33,7 +33,7 @@ export default function CollectionsPage() {
       creator: '0xAbc, EFG',
       collection: 'Astral Arcana',
       time: '5m ago',
-      imageUrl: '/assets/images/avatar-3.jpg',
+      imageUrl: '/assets/images/avatar-7.jpg',
     },
   ];
 

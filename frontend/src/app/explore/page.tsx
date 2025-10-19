@@ -11,12 +11,83 @@ export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
 
-  const repositories = Array(6).fill(null).map((_, index) => ({
-    id: index + 1,
-  }));
+  const repositories = [
+    {
+      id: 1,
+      name: 'lightcommit/frontend',
+      commit: {
+        message: 'feat: implement user authentication',
+        hash: '7a8b9c2',
+        author: 'Alice Wang',
+        time: '2h ago',
+        additions: 245,
+        deletions: 67,
+      },
+    },
+    {
+      id: 2,
+      name: 'lightcommit/backend',
+      commit: {
+        message: 'fix: resolve memory leak in queue',
+        hash: '3f4e5d6',
+        author: 'Bob Chen',
+        time: '5h ago',
+        additions: 89,
+        deletions: 123,
+      },
+    },
+    {
+      id: 3,
+      name: 'lightcommit/contracts',
+      commit: {
+        message: 'refactor: optimize gas usage',
+        hash: '9e8d7c6',
+        author: 'Charlie Li',
+        time: '1d ago',
+        additions: 156,
+        deletions: 45,
+      },
+    },
+    {
+      id: 4,
+      name: 'lightcommit/docs',
+      commit: {
+        message: 'docs: update API documentation',
+        hash: '2b3c4d5',
+        author: 'Diana Liu',
+        time: '2d ago',
+        additions: 378,
+        deletions: 12,
+      },
+    },
+    {
+      id: 5,
+      name: 'lightcommit/mobile',
+      commit: {
+        message: 'feat: add dark mode support',
+        hash: '5a6b7c8',
+        author: 'Eve Zhang',
+        time: '3d ago',
+        additions: 512,
+        deletions: 234,
+      },
+    },
+    {
+      id: 6,
+      name: 'lightcommit/analytics',
+      commit: {
+        message: 'perf: improve query performance',
+        hash: '8d9e0f1',
+        author: 'Frank Wu',
+        time: '4d ago',
+        additions: 67,
+        deletions: 89,
+      },
+    },
+  ];
 
   const handleCardClick = () => {
-    router.push('/mint/new?step=2');
+    router.push('/mint/new?step=1');
   };
 
   return (
@@ -79,14 +150,34 @@ export default function ExplorePage() {
                       boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.8), 0 0 0 1px rgba(0,0,0,0.1) inset',
                     }}
                   >
-                    <div className="absolute inset-0 rounded-[17px] overflow-hidden">
-                      <div className="w-full h-full flex items-center justify-center p-8">
-                        <div className="text-center opacity-30">
-                          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-300 border-2 border-gray-400" />
-                          <div className="space-y-2">
-                            <div className="h-3 bg-gray-300 rounded-full mx-auto w-3/4" />
-                            <div className="h-2 bg-gray-200 rounded-full mx-auto w-1/2" />
+                    <div className="absolute inset-0 rounded-[17px] overflow-hidden p-4 flex flex-col">
+                      <div className="mb-3">
+                        <h3 className="text-sm font-bold text-black mb-1 truncate">
+                          {repo.name}
+                        </h3>
+                        <p className="text-xs text-gray-600 line-clamp-2">
+                          {repo.commit.message}
+                        </p>
+                      </div>
+
+                      <div className="flex-1" />
+
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-[10px] font-bold">
+                            {repo.commit.author.split(' ')[0][0]}
                           </div>
+                          <span className="font-medium">{repo.commit.author}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-mono text-gray-500">#{repo.commit.hash}</span>
+                          <span className="text-gray-500">{repo.commit.time}</span>
+                        </div>
+
+                        <div className="flex gap-3 text-xs font-mono">
+                          <span className="text-green-600">+{repo.commit.additions}</span>
+                          <span className="text-red-600">-{repo.commit.deletions}</span>
                         </div>
                       </div>
                     </div>
