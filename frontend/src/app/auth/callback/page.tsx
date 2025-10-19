@@ -12,38 +12,38 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // 获取当前用户信息
+        // Get current user information
         const { user, error } = await AuthService.getUser()
         
         if (error) {
-          console.error('认证回调错误:', error)
+          console.error('Authentication callback error:', error)
           setStatus('error')
-          setMessage('认证失败，请重试')
+          setMessage('Authentication failed, please try again')
           setTimeout(() => router.push('/'), 3000)
           return
         }
 
         if (user) {
-          // 同步用户信息到数据库（不阻止登录流程）
+          // Sync user info to database (does not block login flow)
           AuthService.syncUserToDatabase(user).catch(syncError => {
-            console.warn('⚠️ 用户信息同步失败，但登录成功:', syncError);
-            // 可以在这里添加后续重试逻辑或通知用户
+            console.warn('⚠️ User info sync failed, but login successful:', syncError);
+            // Can add retry logic or notify user here
           });
 
           setStatus('success');
-          setMessage('登录成功！正在跳转...');
+          setMessage('Login successful! Redirecting...');
           
-          // 跳转到 dashboard
+          // Redirect to dashboard
           setTimeout(() => router.push('/dashboard'), 1500);
         } else {
           setStatus('error')
-          setMessage('未找到用户信息')
+          setMessage('User information not found')
           setTimeout(() => router.push('/'), 3000)
         }
       } catch (error) {
-        console.error('处理认证回调时出错:', error)
+        console.error('Error processing authentication:', error)
         setStatus('error')
-        setMessage('处理认证时出错')
+        setMessage('Error processing authentication')
         setTimeout(() => router.push('/'), 3000)
       }
     }
@@ -60,8 +60,8 @@ export default function AuthCallback() {
               <div className="w-16 h-16 mx-auto mb-4">
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">处理登录中</h2>
-              <p className="text-gray-500 text-sm">请稍候...</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Processing login</h2>
+              <p className="text-gray-500 text-sm">Please wait...</p>
             </>
           )}
           
@@ -72,7 +72,7 @@ export default function AuthCallback() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">🎉 登录成功！</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">🎉 Login successful!</h2>
               <p className="text-green-600 font-medium mb-4">{message}</p>
             </>
           )}
@@ -84,9 +84,9 @@ export default function AuthCallback() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">登录失败</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Login failed</h2>
               <p className="text-red-600 font-medium mb-4">{message}</p>
-              <p className="text-gray-500 text-sm">正在返回首页...</p>
+              <p className="text-gray-500 text-sm">Returning to homepage...</p>
             </>
           )}
         </div>

@@ -27,19 +27,19 @@ export function ProfileContent() {
         const { user, error } = await AuthService.getUser();
         
         if (error || !user) {
-          // 直接重定向到登录页面
+          // Directly redirect to login page
           window.location.href = '/api/auth/github';
           return;
         }
 
-        // 从用户信息构建 profile 对象
+        // Build profile object from user information
         const profileData: UserProfile = {
           id: user.id,
           githubId: user.user_metadata?.user_name || user.user_metadata?.preferred_username || '',
           username: user.user_metadata?.user_name || user.user_metadata?.preferred_username || '',
           email: user.email,
           avatarUrl: user.user_metadata?.avatar_url,
-          walletAddress: undefined, // 需要从数据库获取
+          walletAddress: undefined, // Need to get from database
           createdAt: user.created_at,
           updatedAt: user.updated_at || user.created_at
         };
@@ -47,7 +47,7 @@ export function ProfileContent() {
         setProfile(profileData);
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : '获取用户资料失败');
+        setError(err instanceof Error ? err.message : 'Failed to get user profile');
         setLoading(false);
       }
     };
@@ -61,7 +61,7 @@ export function ProfileContent() {
         <div className="max-w-4xl mx-auto px-6 py-12 w-full">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">加载用户信息中...</p>
+            <p className="text-gray-600">Loading user information...</p>
           </div>
         </div>
       </div>
@@ -74,14 +74,14 @@ export function ProfileContent() {
         <div className="max-w-4xl mx-auto px-6 py-12 w-full">
           <div className="text-center">
             <div className="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto">
-              <h2 className="text-xl font-semibold text-red-800 mb-2">加载失败</h2>
+              <h2 className="text-xl font-semibold text-red-800 mb-2">Loading failed</h2>
               <p className="text-red-600 mb-4">{error}</p>
               <a
                 href="/api/auth/github"
                 className="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
               >
                 <Github className="w-4 h-4 mr-2" />
-                重新登录
+                Re-login
               </a>
             </div>
           </div>
@@ -95,7 +95,7 @@ export function ProfileContent() {
       <div className="min-h-screen flex flex-col justify-center">
         <div className="max-w-4xl mx-auto px-6 py-12 w-full">
           <div className="text-center">
-            <p className="text-gray-600">未找到用户信息</p>
+            <p className="text-gray-600">User information not found</p>
           </div>
         </div>
       </div>
@@ -107,9 +107,9 @@ export function ProfileContent() {
       <div className="max-w-4xl mx-auto px-6 py-12 w-full">
         {/* Header Section */}
         <div className="mb-12 text-center">
-          <h1 className="text-4xl font-light text-gray-900 mb-4 font-sans">用户资料</h1>
+          <h1 className="text-4xl font-light text-gray-900 mb-4 font-sans">User Profile</h1>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            您的 GitHub 授权信息和开发者档案
+            Your GitHub authorization information and developer profile
           </p>
         </div>
 
