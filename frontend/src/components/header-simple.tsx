@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Github, Wallet } from 'lucide-react';
+import { Menu, X, Github, Wallet, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { ConnectWalletModal } from './connect-wallet-modal';
+import { useWeb3 } from '@/lib/contexts/Web3Context';
 
 export function HeaderSimple() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const pathname = usePathname();
+  const { account, isConnected, disconnect } = useWeb3();
 
   const navItems = [
     { label: 'HOME', href: '/' },
@@ -48,13 +50,32 @@ export function HeaderSimple() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <button
-              onClick={() => setWalletModalOpen(true)}
-              className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(220,220,220,0.5)] transition-all duration-200 font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px]"
-            >
-              <Wallet className="w-5 h-5" />
-              <span>Connect Wallet</span>
-            </button>
+            {!isConnected ? (
+              <button
+                onClick={() => setWalletModalOpen(true)}
+                className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(220,220,220,0.5)] transition-all duration-200 font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px]"
+              >
+                <Wallet className="w-5 h-5" />
+                <span>Connect Wallet</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setWalletModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-black rounded-[39px] bg-[rgba(180,255,180,0.3)] hover:bg-[rgba(180,255,180,0.5)] transition-all duration-200 font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                >
+                  <Wallet className="w-5 h-5" />
+                  <span>{account?.slice(0, 6)}...{account?.slice(-4)}</span>
+                </button>
+                <button
+                  onClick={disconnect}
+                  className="inline-flex items-center justify-center p-2.5 border-2 border-black rounded-full bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(255,180,180,0.3)] transition-all duration-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                  title="断开连接"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            )}
 
             <a
               href="/api/auth/github"
@@ -87,16 +108,41 @@ export function HeaderSimple() {
                 {item.label}
               </Link>
             ))}
-            <button
-              onClick={() => {
-                setWalletModalOpen(true);
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center justify-center gap-2 w-full px-6 py-3 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px]"
-            >
-              <Wallet className="w-5 h-5" />
-              <span>Connect Wallet</span>
-            </button>
+            {!isConnected ? (
+              <button
+                onClick={() => {
+                  setWalletModalOpen(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center justify-center gap-2 w-full px-6 py-3 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                <Wallet className="w-5 h-5" />
+                <span>Connect Wallet</span>
+              </button>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setWalletModalOpen(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center justify-center gap-2 flex-1 px-6 py-3 border-2 border-black rounded-[39px] bg-[rgba(180,255,180,0.3)] font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                >
+                  <Wallet className="w-5 h-5" />
+                  <span>{account?.slice(0, 6)}...{account?.slice(-4)}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    disconnect();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center justify-center p-3 border-2 border-black rounded-[39px] bg-[rgba(255,180,180,0.3)] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                  title="断开连接"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+            )}
             <a
               href="/api/auth/github"
               className="flex items-center justify-center gap-2 w-full px-6 py-3 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px]"
