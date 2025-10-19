@@ -80,62 +80,32 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className={`flex items-center space-x-3 ${isDashboard ? 'flex-1' : ''}`}>
-              {isLanding ? (
-                <>
-                  <div className="w-10 h-10 relative">
-                    <Image
-                      src="/logo.png"
-                      alt="Lightcommit Logo"
-                      width={37}
-                      height={30}
-                      priority
-                      className="object-contain"
-                    />
-                  </div>
-                  <span onClick={() => router.push('/')} className="text-xl font-normal text-[#111111] uppercase leading-20 cursor-pointer">
-                    Lightcommit
-                  </span>
-                </>
-              ) : (
-                <>
-                  <div className="w-10 h-10 bg-gradient-to-br from-black to-gray-800 rounded-xl flex items-center justify-center shadow-md">
-                    <span className="text-white font-bold text-lg">L</span>
-                  </div>
-                  <span className="text-xl font-bold text-gray-900 tracking-tight">Lightcommit</span>
-                </>
-              )}
+              <div className="w-10 h-10 relative">
+                <Image
+                  src="/logo.png"
+                  alt="Lightcommit Logo"
+                  width={37}
+                  height={30}
+                  priority
+                  className="object-contain"
+                />
+              </div>
+              <span onClick={() => router.push('/')} className="text-xl font-normal text-[#111111] uppercase leading-20 cursor-pointer">
+                Lightcommit
+              </span>
             </div>
 
             {/* Navigation Links */}
-            <div className={`flex items-center ${isDashboard ? 'justify-center flex-1' : 'space-x-12'}`}>
-              {isDashboard ? (
-                <div className="hidden md:flex items-center space-x-10">
-                  <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight hover:text-gray-600 transition-colors duration-200 relative group font-sans cursor-pointer">
-                    Discover
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-200 group-hover:w-full"></span>
-                  </button>
-                  <button onClick={handleProfilesClick} className="text-gray-600 font-extralight hover:text-gray-900 transition-colors duration-200 relative group font-sans cursor-pointer">
-                    Profiles
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-200 group-hover:w-full"></span>
-                  </button>
-                  <a href="#" className="text-gray-600 font-extralight hover:text-gray-900 transition-colors duration-200 relative group font-sans">
-                    Docs
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-200 group-hover:w-full"></span>
-                  </a>
-                </div>
-              ) : (
-                <>
-                  <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
-                    Discover
-                  </button>
-                  <button onClick={handleProfilesClick} className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
-                    Profiles
-                  </button>
-                  <a href="#docs" className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
-                    Docs
-                  </a>
-                </>
-              )}
+            <div className="flex items-center space-x-12">
+              <button onClick={handleDiscoverClick} className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
+                Discover
+              </button>
+              <button onClick={handleProfilesClick} className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
+                Profiles
+              </button>
+              <a href="#docs" className="text-gray-900 font-extralight text-2xl hover:text-gray-600 transition-colors cursor-pointer">
+                Docs
+              </a>
             </div>
 
             {/* Right Section */}
