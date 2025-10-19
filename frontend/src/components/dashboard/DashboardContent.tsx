@@ -2,6 +2,7 @@
 
 import { Search, Plus, Star, Users, Activity, Github, Code } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { AuthService } from '@/lib/services/auth.service';
 
 interface DashboardContentProps {
   statsData?: Array<{
@@ -31,15 +32,17 @@ export function DashboardContent({
 }: DashboardContentProps) {
   const router = useRouter();
 
-  const handleCardClick = (title: string) => {
+  const handleCardClick = async (title: string) => {
     if (title === 'Web3 Portfolio') {
-      if (!isAuthenticated()) {
+      const { session } = await AuthService.getSession();
+      if (!session) {
         window.location.href = '/api/auth/github';
         return;
       }
       router.push('/profiles');
     } else if (title === 'Mint a new commit') {
-      if (!isAuthenticated()) {
+      const { session } = await AuthService.getSession();
+      if (!session) {
         window.location.href = '/api/auth/github';
         return;
       }
