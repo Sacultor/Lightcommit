@@ -1,116 +1,120 @@
-import { query } from '@/lib/database/index';
+import { getDatabaseClient } from '@/lib/database/index';
 import { Repository, CreateRepositoryData, UpdateRepositoryData } from '@/types/repository';
 
 export class RepositoryRepository {
   // 根据 ID 查找仓库
   static async findById(id: string): Promise<Repository | null> {
-    const result = await query(
-      'SELECT * FROM repositories WHERE id = $1',
-      [id],
-    );
+    const supabase = getDatabaseClient();
+    const { data, error } = await supabase
+      .from('repositories')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
 
-    return result.rows.length > 0 ? this.mapRowToRepository(result.rows[0]) : null;
+    if (error) throw error;
+
+    return data ? this.mapRowToRepository(data) : null;
   }
 
   // 根据 GitHub ID 查找仓库
   static async findByGithubId(githubId: string): Promise<Repository | null> {
-    const result = await query(
-      'SELECT * FROM repositories WHERE github_id = $1',
-      [githubId],
-    );
+    const supabase = getDatabaseClient();
+    const { data, error } = await supabase
+      .from('repositories')
+      .select('*')
+      .eq('githubId', githubId)
+      .maybeSingle();
 
-    return result.rows.length > 0 ? this.mapRowToRepository(result.rows[0]) : null;
+    if (error) throw error;
+
+    return data ? this.mapRowToRepository(data) : null;
   }
 
   // 根据全名查找仓库
   static async findByFullName(fullName: string): Promise<Repository | null> {
-    const result = await query(
-      'SELECT * FROM repositories WHERE full_name = $1',
-      [fullName],
-    );
+    const supabase = getDatabaseClient();
+    const { data, error } = await supabase
+      .from('repositories')
+      .select('*')
+      .eq('fullName', fullName)
+      .maybeSingle();
 
-    return result.rows.length > 0 ? this.mapRowToRepository(result.rows[0]) : null;
+    if (error) throw error;
+
+    return data ? this.mapRowToRepository(data) : null;
   }
 
   // 创建仓库
   static async create(repositoryData: CreateRepositoryData): Promise<Repository> {
-    const result = await query(
-      `INSERT INTO repositories (github_id, name, full_name, description, url, is_private, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-       RETURNING *`,
-      [
-        repositoryData.githubId,
-        repositoryData.name,
-        repositoryData.fullName,
-        repositoryData.description,
-        repositoryData.url,
-        repositoryData.isPrivate,
-      ],
-    );
+    const supabase = getDatabaseClient();
+    const { data, error } = await supabase
+      .from('repositories')
+      .insert({
+        githubId: repositoryData.githubId,
+        name: repositoryData.name,
+        fullName: repositoryData.fullName,
+        description: repositoryData.description,
+        url: repositoryData.url,
+        isPrivate: repositoryData.isPrivate,
+      })
+      .select()
+      .single();
 
-    return this.mapRowToRepository(result.rows[0]);
+    if (error) throw error;
+
+    return this.mapRowToRepository(data);
   }
 
   // 更新仓库
   static async update(id: string, repositoryData: UpdateRepositoryData): Promise<Repository | null> {
-    const setClause = [];
-    const values = [];
-    let paramIndex = 1;
+    const supabase = getDatabaseClient();
+    
+    const updateData: any = {};
+    if (repositoryData.name !== undefined) updateData.name = repositoryData.name;
+    if (repositoryData.fullName !== undefined) updateData.fullName = repositoryData.fullName;
+    if (repositoryData.description !== undefined) updateData.description = repositoryData.description;
+    if (repositoryData.url !== undefined) updateData.url = repositoryData.url;
+    if (repositoryData.isPrivate !== undefined) updateData.isPrivate = repositoryData.isPrivate;
 
-    if (repositoryData.name !== undefined) {
-      setClause.push(`name = $${paramIndex++}`);
-      values.push(repositoryData.name);
-    }
-    if (repositoryData.fullName !== undefined) {
-      setClause.push(`full_name = $${paramIndex++}`);
-      values.push(repositoryData.fullName);
-    }
-    if (repositoryData.description !== undefined) {
-      setClause.push(`description = $${paramIndex++}`);
-      values.push(repositoryData.description);
-    }
-    if (repositoryData.url !== undefined) {
-      setClause.push(`url = $${paramIndex++}`);
-      values.push(repositoryData.url);
-    }
-    if (repositoryData.isPrivate !== undefined) {
-      setClause.push(`is_private = $${paramIndex++}`);
-      values.push(repositoryData.isPrivate);
-    }
-
-    if (setClause.length === 0) {
+    if (Object.keys(updateData).length === 0) {
       return this.findById(id);
     }
 
-    setClause.push('updated_at = NOW()');
-    values.push(id);
+    const { data, error } = await supabase
+      .from('repositories')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
 
-    const result = await query(
-      `UPDATE repositories SET ${setClause.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-      values,
-    );
+    if (error) throw error;
 
-    return result.rows.length > 0 ? this.mapRowToRepository(result.rows[0]) : null;
+    return data ? this.mapRowToRepository(data) : null;
   }
 
   // 删除仓库
   static async delete(id: string): Promise<boolean> {
-    const result = await query(
-      'DELETE FROM repositories WHERE id = $1',
-      [id],
-    );
+    const supabase = getDatabaseClient();
+    const { error } = await supabase
+      .from('repositories')
+      .delete()
+      .eq('id', id);
 
-    return (result.rowCount ?? 0) > 0;
+    return !error;
   }
 
   // 获取所有仓库
   static async findAll(limit = 50, offset = 0): Promise<Repository[]> {
-    const result = await query(
-      'SELECT * FROM repositories ORDER BY created_at DESC LIMIT $1 OFFSET $2',
-      [limit, offset],
-    );
+    const supabase = getDatabaseClient();
+    const { data, error } = await supabase
+      .from('repositories')
+      .select('*')
+      .order('createdAt', { ascending: false })
+      .range(offset, offset + limit - 1);
 
-    return result.rows.map(this.mapRowToRepository);
+    if (error) throw error;
+
+    return data ? data.map(this.mapRowToRepository) : [];
   }
 
   // 查找或创建仓库

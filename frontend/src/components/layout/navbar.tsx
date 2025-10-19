@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { isAuthenticated } from '@/lib/auth';
+import { AuthService } from '@/lib/services/auth.service';
 
 interface NavbarProps {
   variant?: 'landing' | 'dashboard';
@@ -15,6 +15,23 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
   const isLanding = variant === 'landing';
   const isDashboard = variant === 'dashboard';
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { user } = await AuthService.getUser();
+        setIsAuthenticated(!!user);
+      } catch {
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const handleDiscoverClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -23,7 +40,7 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
 
   const handleProfilesClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!isAuthenticated()) {
+    if (!isAuthenticated) {
       window.location.href = '/api/auth/github';
       return;
     }

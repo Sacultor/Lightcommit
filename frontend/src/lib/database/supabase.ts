@@ -1,4 +1,4 @@
-import { getSupabaseClient, testSupabaseConnection, supabaseHealthCheck } from '../supabase/client';
+import { supabase } from '../supabase/client';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
@@ -9,7 +9,7 @@ export class SupabaseService {
   private client: SupabaseClient;
 
   constructor() {
-    this.client = getSupabaseClient();
+    this.client = supabase;
   }
 
   /**
@@ -23,15 +23,32 @@ export class SupabaseService {
    * 执行原始SQL查询
    * @param query SQL查询语句
    * @param params 查询参数
+   * 
+   * 注意：这需要在 Supabase 中创建 execute_sql RPC 函数
+   * 创建方法：
+   * CREATE OR REPLACE FUNCTION execute_sql(query text, params jsonb DEFAULT '[]'::jsonb)
+   * RETURNS jsonb
+   * LANGUAGE plpgsql
+   * SECURITY DEFINER
+   * AS $$
+   * DECLARE
+   *   result jsonb;
+   * BEGIN
+   *   EXECUTE query INTO result USING params;
+   *   RETURN result;
+   * END;
+   * $$;
    */
   async query(query: string, params?: any[]): Promise<any> {
     try {
+      // 使用 Supabase RPC 执行原始 SQL
       const { data, error } = await this.client.rpc('execute_sql', {
         query,
         params: params || []
       });
 
       if (error) {
+        console.error('SQL查询错误:', error);
         throw new Error(`SQL查询失败: ${error.message}`);
       }
 
@@ -151,14 +168,30 @@ export class SupabaseService {
    * 测试数据库连接
    */
   async testConnection(): Promise<boolean> {
-    return await testSupabaseConnection();
+    try {
+      const { error } = await this.client.auth.getSession();
+      return !error;
+    } catch {
+      return false;
+    }
   }
 
   /**
    * 健康检查
    */
   async healthCheck() {
-    return await supabaseHealthCheck();
+    try {
+      const { error } = await this.client.auth.getSession();
+      return {
+        status: error ? 'unhealthy' : 'healthy',
+        error: error?.message
+      };
+    } catch (err) {
+      return {
+        status: 'unhealthy',
+        error: err instanceof Error ? err.message : 'Unknown error'
+      };
+    }
   }
 
   /**

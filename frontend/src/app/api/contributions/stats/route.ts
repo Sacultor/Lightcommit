@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const token = authorization.substring(7);
-    const user = await AuthService.getUserFromToken(token);
+    // const token = authorization.substring(7); // 不再需要
+    const { user, error } = await AuthService.getServerUser();
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 },

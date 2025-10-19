@@ -17,10 +17,10 @@ export async function GET(
       );
     }
 
-    const token = authorization.substring(7);
-    const user = await AuthService.getUserFromToken(token);
+    // 使用新的认证方法
+    const { user, error } = await AuthService.getServerUser();
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 },
