@@ -1,31 +1,30 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { setAuthToken } from '@/lib/auth';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
-export default function AuthCallbackPage() {
+export default function AuthCallback() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token');
-      if (token) {
-        // 使用统一的认证工具函数存储 token
-        setAuthToken(token);
-        router.replace('/dashboard');
-      } else {
-        router.replace('/auth/error');
-      }
-    } catch {
-      router.replace('/auth/error');
+    const token = searchParams.get('token');
+
+    if (token) {
+      localStorage.setItem('token', token);
+      router.push('/collections');
+    } else {
+      router.push('/');
     }
-  }, [router]);
+  }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-600">Processing login...</p>
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="text-center">
+        <Loader2 className="w-16 h-16 text-purple-500 animate-spin mx-auto mb-4" />
+        <p className="text-white text-xl">正在登录...</p>
+      </div>
     </div>
   );
 }
