@@ -8,13 +8,13 @@ import toast from 'react-hot-toast';
 export const SUPPORTED_CHAINS = {
   SEPOLIA: {
     chainId: 11155111,
-    name: 'Sepolia',
+    name: 'Sepolia Testnet',
     rpcUrl: 'https://sepolia.infura.io/v3/YOUR_PROJECT_ID',
     explorerUrl: 'https://sepolia.etherscan.io',
   },
   LOCALHOST: {
     chainId: 31337,
-    name: 'Localhost',
+    name: 'Hardhat Local',
     rpcUrl: 'http://127.0.0.1:8545',
     explorerUrl: '',
   },
@@ -69,9 +69,16 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       // 保存连接状态到 localStorage
       localStorage.setItem('walletConnected', 'true');
       
-      // 检查网络
+      // 检查网络并自动切换
       if (currentChainId !== targetChainId) {
-        toast.error(`请切换到正确的网络 (Chain ID: ${targetChainId})`);
+        toast.error(`当前网络不正确，正在尝试切换到 Hardhat Local...`);
+        // 尝试自动切换网络
+        try {
+          await switchNetwork(targetChainId);
+        } catch (switchError) {
+          console.error('自动切换网络失败:', switchError);
+          toast.error(`请手动切换到 Hardhat Local 网络 (Chain ID: ${targetChainId})`);
+        }
       } else {
         toast.success(`钱包已连接: ${address.slice(0, 6)}...${address.slice(-4)}`);
       }
@@ -105,7 +112,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: chainIdHex }],
         });
-        toast.success('网络切换成功');
+        toast.success('网络切换成功！');
       } catch (switchError: any) {
         // 如果网络不存在，尝试添加
         if (switchError.code === 4902) {
@@ -113,7 +120,9 @@ export function Web3Provider({ children }: { children: ReactNode }) {
             (chain) => chain.chainId === targetChainId
           );
 
-          if (chainConfig && targetChainId === SUPPORTED_CHAINS.SEPOLIA.chainId) {
+          if (chainConfig) {
+            toast.loading('正在添加网络到 MetaMask...', { id: 'adding-network' });
+            
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [
@@ -121,7 +130,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
                   chainId: chainIdHex,
                   chainName: chainConfig.name,
                   rpcUrls: [chainConfig.rpcUrl],
-                  blockExplorerUrls: [chainConfig.explorerUrl],
+                  blockExplorerUrls: chainConfig.explorerUrl ? [chainConfig.explorerUrl] : [],
                   nativeCurrency: {
                     name: 'Ethereum',
                     symbol: 'ETH',
@@ -130,6 +139,11 @@ export function Web3Provider({ children }: { children: ReactNode }) {
                 },
               ],
             });
+            
+            toast.dismiss('adding-network');
+            toast.success(`${chainConfig.name} 网络已添加并切换成功！`);
+          } else {
+            throw new Error('不支持的网络');
           }
         } else {
           throw switchError;
@@ -138,6 +152,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       console.error('切换网络失败:', error);
       toast.error(error.message || '切换网络失败');
+      throw error;
     }
   };
 
@@ -147,7 +162,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       disconnect();
     } else if (accounts[0] !== account) {
       setAccount(accounts[0]);
-      toast.info('账户已切换');
+      toast('账户已切换', { icon: '🔄' });
     }
   };
 
@@ -157,7 +172,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
     setChainId(newChainId);
     
     if (newChainId !== targetChainId) {
-      toast.warning('请切换到正确的网络');
+      toast('请切换到正确的网络', { icon: '⚠️' });
     }
     
     // 刷新页面以重新初始化
