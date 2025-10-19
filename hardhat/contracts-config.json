@@ -1,0 +1,53 @@
+{
+  "networks": {
+    "sepolia": {
+      "chainId": 11155111,
+      "name": "Sepolia Testnet",
+      "rpcUrl": "https://sepolia.infura.io/v3/YOUR_PROJECT_ID",
+      "contractAddress": "DEPLOYED_CONTRACT_ADDRESS_HERE",
+      "explorerUrl": "https://sepolia.etherscan.io"
+    },
+    "ethereum": {
+      "chainId": 1,
+      "name": "Ethereum Mainnet",
+      "rpcUrl": "https://mainnet.infura.io/v3/YOUR_PROJECT_ID",
+      "contractAddress": "DEPLOYED_CONTRACT_ADDRESS_HERE",
+      "explorerUrl": "https://etherscan.io"
+    },
+    "polygon": {
+      "chainId": 137,
+      "name": "Polygon Mainnet",
+      "rpcUrl": "https://polygon-rpc.com",
+      "contractAddress": "DEPLOYED_CONTRACT_ADDRESS_HERE",
+      "explorerUrl": "https://polygonscan.com"
+    },
+    "arbitrum": {
+      "chainId": 42161,
+      "name": "Arbitrum One",
+      "rpcUrl": "https://arb1.arbitrum.io/rpc",
+      "contractAddress": "DEPLOYED_CONTRACT_ADDRESS_HERE",
+      "explorerUrl": "https://arbiscan.io"
+    },
+    "optimism": {
+      "chainId": 10,
+      "name": "Optimism",
+      "rpcUrl": "https://mainnet.optimism.io",
+      "contractAddress": "DEPLOYED_CONTRACT_ADDRESS_HERE",
+      "explorerUrl": "https://optimistic.etherscan.io"
+    }
+  },
+  "contract": {
+    "name": "CommitNFT",
+    "symbol": "LCNFT",
+    "baseTokenURI": "https://api.lightcommit.com/metadata/",
+    "maxSupply": 1000000
+  },
+  "deployment": {
+    "recommendedNetwork": "sepolia",
+    "gasOptimization": {
+      "batchSize": 10,
+      "gasLimit": 2000000,
+      "gasPriceMultiplier": 1.1
+    }
+  }
+}

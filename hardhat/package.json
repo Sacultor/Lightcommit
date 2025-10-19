@@ -6,7 +6,10 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "deploy": "hardhat ignition deploy ignition/modules/Counter.ts"
+    "test:commit": "hardhat test test/CommitNFT.ts",
+    "deploy": "hardhat ignition deploy ignition/modules/Counter.ts",
+    "deploy:commit": "hardhat ignition deploy ignition/modules/CommitNFT.ts",
+    "deploy:sepolia": "hardhat ignition deploy ignition/modules/CommitNFT.ts --network sepolia"
   },
   "keywords": [],
   "author": "",
