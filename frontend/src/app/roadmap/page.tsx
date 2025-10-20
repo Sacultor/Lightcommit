@@ -37,6 +37,44 @@ const roadmapFeatures = [
   },
 ];
 
+const featureConfigs = [
+  {
+    position: 'left-[16%] top-[3%]',
+    textAlign: 'text-right',
+    animation: { x: -20 },
+    delay: 0.2,
+    maxWidth: '',
+  },
+  {
+    position: 'right-0 top-[22%]',
+    textAlign: 'text-left',
+    animation: { x: -20 },
+    delay: 0.3,
+    maxWidth: '',
+  },
+  {
+    position: 'left-0 top-[44%]',
+    textAlign: 'text-right',
+    animation: { x: -20 },
+    delay: 0.4,
+    maxWidth: 'max-w-xs',
+  },
+  {
+    position: 'right-[12%] top-[52%]',
+    textAlign: 'text-left',
+    animation: { x: 20 },
+    delay: 0.3,
+    maxWidth: '',
+  },
+  {
+    position: 'right-[13%] top-[85%]',
+    textAlign: 'text-left',
+    animation: { x: 20 },
+    delay: 0.4,
+    maxWidth: '',
+  },
+];
+
 export default function RoadmapPage() {
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
@@ -61,75 +99,25 @@ export default function RoadmapPage() {
               className="w-full max-w-4xl h-auto"
             />
 
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="absolute left-0 top-[3%] text-right max-w-xs"
-            >
-              <h3 className="text-xl md:text-2xl font-black text-black mb-2">
-                {roadmapFeatures[0].number}. {roadmapFeatures[0].title}
-              </h3>
-              <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                {roadmapFeatures[0].description}
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="absolute left-0 top-[38%] text-right max-w-xs"
-            >
-              <h3 className="text-xl md:text-2xl font-black text-black mb-2">
-                {roadmapFeatures[1].number}. {roadmapFeatures[1].title}
-              </h3>
-              <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                {roadmapFeatures[1].description}
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              className="absolute left-0 top-[73%] text-right max-w-xs"
-            >
-              <h3 className="text-xl md:text-2xl font-black text-black mb-2">
-                {roadmapFeatures[2].number}. {roadmapFeatures[2].title}
-              </h3>
-              <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                {roadmapFeatures[2].description}
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="absolute right-0 top-[8%] text-left max-w-xs"
-            >
-              <h3 className="text-xl md:text-2xl font-black text-black mb-2">
-                {roadmapFeatures[3].number}. {roadmapFeatures[3].title}
-              </h3>
-              <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                {roadmapFeatures[3].description}
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.4 }}
-              className="absolute right-0 top-[53%] text-left max-w-xs"
-            >
-              <h3 className="text-xl md:text-2xl font-black text-black mb-2">
-                {roadmapFeatures[4].number}. {roadmapFeatures[4].title}
-              </h3>
-              <p className="text-base md:text-lg text-gray-700 leading-relaxed">
-                {roadmapFeatures[4].description}
-              </p>
-            </motion.div>
+            {roadmapFeatures.map((feature, index) => {
+              const config = featureConfigs[index];
+              return (
+                <motion.div
+                  key={feature.id}
+                  initial={{ opacity: 0, ...config.animation }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: config.delay }}
+                  className={`absolute ${config.position} ${config.textAlign} ${config.maxWidth}`}
+                >
+                  <h3 className="text-xl md:text-2xl font-black text-black mb-2">
+                    {feature.number}. {feature.title}
+                  </h3>
+                  <p className="text-base md:text-lg text-gray-700 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </main>
