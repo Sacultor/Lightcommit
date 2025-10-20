@@ -23,24 +23,24 @@ export const query = async <T = any>(text: string, params?: unknown[]): Promise<
   try {
     const supabaseService = getSupabaseService();
     const result = await supabaseService.query(text, params);
-    
+
     // 转换为标准 QueryResult 格式
     const res: QueryResult<T> = {
       rows: Array.isArray(result) ? result : (result ? [result] : []),
       rowCount: Array.isArray(result) ? result.length : (result ? 1 : 0),
       command: text.trim().split(' ')[0].toUpperCase(),
       oid: 0,
-      fields: []
+      fields: [],
     };
 
     const duration = Date.now() - start;
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('Executed query', { 
+      console.log('Executed query', {
         text: text.substring(0, 100), // 只显示前100个字符
-        duration, 
+        duration,
         rows: res.rowCount,
-        connectionType: 'supabase'
+        connectionType: 'supabase',
       });
     }
 
@@ -80,7 +80,7 @@ export const healthCheck = async (): Promise<boolean> => {
 
     const supabaseService = getSupabaseService();
     const healthResult = await supabaseService.healthCheck();
-    
+
     if (healthResult.status === 'healthy') {
       console.log('✅ Supabase数据库健康检查成功');
       return true;

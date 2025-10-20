@@ -1,14 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // 检查 Supabase 是否正确配置
-const isSupabaseConfigured = 
-  supabaseUrl && 
-  supabaseAnonKey && 
-  !supabaseUrl.includes('placeholder') && 
+const isSupabaseConfigured =
+  supabaseUrl &&
+  supabaseAnonKey &&
+  !supabaseUrl.includes('placeholder') &&
   !supabaseAnonKey.includes('placeholder') &&
   supabaseUrl.startsWith('https://');
 
@@ -20,7 +19,7 @@ if (!isSupabaseConfigured) {
 }
 
 // 创建 Supabase 客户端实例（即使配置无效也创建，避免模块加载错误）
-export const supabase = createClient<Database>(
+export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-key',
   {
@@ -29,7 +28,7 @@ export const supabase = createClient<Database>(
       persistSession: true,
       detectSessionInUrl: true,
     },
-  }
+  },
 );
 
 // 导出配置状态

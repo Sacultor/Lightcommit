@@ -30,9 +30,9 @@ export function CollectionCard({
     >
       <div className="aspect-[3/4] bg-white/50 rounded-2xl border-3 border-gray-300 mb-4 overflow-hidden backdrop-blur-sm relative">
         {imageUrl ? (
-          <img 
-            src={imageUrl} 
-            alt={title} 
+          <img
+            src={imageUrl}
+            alt={title}
             className="w-full h-full object-cover"
           />
         ) : (

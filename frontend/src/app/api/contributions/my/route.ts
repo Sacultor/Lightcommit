@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       },
       user: {
         id: user.id,
-        username: user.username,
+        username: user.user_metadata?.user_name || user.user_metadata?.preferred_username || user.user_metadata?.login || 'unknown',
       },
     });
 

@@ -1,26 +1,26 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { AuthService } from '@/lib/services/auth.service'
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AuthService } from '@/lib/services/auth.service';
 
 export default function AuthCallback() {
-  const router = useRouter()
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-  const [message, setMessage] = useState('')
+  const router = useRouter();
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
         // Get current user information
-        const { user, error } = await AuthService.getUser()
-        
+        const { user, error } = await AuthService.getUser();
+
         if (error) {
-          console.error('Authentication callback error:', error)
-          setStatus('error')
-          setMessage('Authentication failed, please try again')
-          setTimeout(() => router.push('/'), 3000)
-          return
+          console.error('Authentication callback error:', error);
+          setStatus('error');
+          setMessage('Authentication failed, please try again');
+          setTimeout(() => router.push('/'), 3000);
+          return;
         }
 
         if (user) {
@@ -32,24 +32,24 @@ export default function AuthCallback() {
 
           setStatus('success');
           setMessage('Login successful! Redirecting...');
-          
+
           // Redirect to explore
           setTimeout(() => router.push('/explore'), 1500);
         } else {
-          setStatus('error')
-          setMessage('User information not found')
-          setTimeout(() => router.push('/'), 3000)
+          setStatus('error');
+          setMessage('User information not found');
+          setTimeout(() => router.push('/'), 3000);
         }
       } catch (error) {
-        console.error('Error processing authentication:', error)
-        setStatus('error')
-        setMessage('Error processing authentication')
-        setTimeout(() => router.push('/'), 3000)
+        console.error('Error processing authentication:', error);
+        setStatus('error');
+        setMessage('Error processing authentication');
+        setTimeout(() => router.push('/'), 3000);
       }
-    }
+    };
 
-    handleAuthCallback()
-  }, [router])
+    handleAuthCallback();
+  }, [router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -64,7 +64,7 @@ export default function AuthCallback() {
               <p className="text-gray-500 text-sm">Please wait...</p>
             </>
           )}
-          
+
           {status === 'success' && (
             <>
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4 animate-bounce">
@@ -76,7 +76,7 @@ export default function AuthCallback() {
               <p className="text-green-600 font-medium mb-4">{message}</p>
             </>
           )}
-          
+
           {status === 'error' && (
             <>
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
@@ -92,5 +92,5 @@ export default function AuthCallback() {
         </div>
       </div>
     </div>
-  )
+  );
 }
