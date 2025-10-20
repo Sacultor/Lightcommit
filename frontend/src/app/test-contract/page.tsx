@@ -56,17 +56,17 @@ export default function TestContractPage() {
       setContractName(name);
       setContractSymbol(symbol);
       
-      toast.success('合约信息加载成功');
+      toast.success('Contract information loaded successfully');
     } catch (error) {
       console.error('Failed to load contract info:', error);
-      toast.error('加载合约信息失败');
+      toast.error('Failed to load contract information');
     }
   };
 
   // 从链上查询真实的 NFT 数据
   const handleQueryNFT = async () => {
     if (!contract || !queryTokenId) {
-      toast.error('请输入 Token ID');
+      toast.error('Please enter Token ID');
       return;
     }
 
@@ -77,14 +77,14 @@ export default function TestContractPage() {
       
       if (data) {
         setQueryResult(data);
-        toast.success('查询成功');
+        toast.success('Query successful');
       } else {
-        toast.error('Token 不存在');
+        toast.error('Token does not exist');
         setQueryResult(null);
       }
     } catch (error: any) {
       console.error('Query error:', error);
-      toast.error('查询失败: ' + (error.message || '未知错误'));
+      toast.error('Query failed: ' + (error.message || 'Unknown error'));
       setQueryResult(null);
     } finally {
       setLoading(false);
@@ -94,18 +94,18 @@ export default function TestContractPage() {
   // 使用真实数据铸造 NFT
   const handleMintWithRealData = async () => {
     if (!contract || !account) {
-      toast.error('请先连接钱包');
+      toast.error('Please connect wallet first');
       return;
     }
 
     if (!isCorrectNetwork) {
-      toast.error('请切换到正确的网络');
+      toast.error('Please switch to the correct network');
       return;
     }
 
     // 验证必填字段
     if (!formData.repo || !formData.commit || !formData.message) {
-      toast.error('请填写所有必填字段');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -118,7 +118,7 @@ export default function TestContractPage() {
       // 检查是否已铸造
       const isMinted = await service.isCommitMinted(formData.commit);
       if (isMinted) {
-        toast.error('此 commit 已经铸造过 NFT！');
+        toast.error('This commit has already been minted as NFT!');
         setLoading(false);
         return;
       }
@@ -136,7 +136,7 @@ export default function TestContractPage() {
       };
 
       console.log('🚀 发送真实交易到链上...', commitData);
-      toast.loading('正在发送交易到区块链...', { id: 'minting' });
+      toast.loading('Sending transaction to blockchain...', { id: 'minting' });
       
       const result = await service.mintCommit(
         account,
@@ -147,7 +147,7 @@ export default function TestContractPage() {
       toast.dismiss('minting');
 
       if (result.success) {
-        toast.success('✅ NFT 铸造成功！交易已上链');
+        toast.success('✅ NFT minted successfully! Transaction on chain');
         setMintResult(`✅ 铸造成功!\n交易哈希: ${result.transactionHash}\nToken ID: ${result.tokenId}\n\n在 Hardhat 节点日志中可以看到真实的链上交易记录`);
         
         // 重新加载供应量
@@ -165,13 +165,13 @@ export default function TestContractPage() {
           merged: false,
         });
       } else {
-        toast.error('❌ 铸造失败: ' + result.error);
+        toast.error('❌ Minting failed: ' + result.error);
         setMintResult(`❌ 失败: ${result.error}`);
       }
     } catch (error: any) {
       console.error('Mint error:', error);
       toast.dismiss('minting');
-      toast.error('❌ 交易失败');
+      toast.error('❌ Transaction failed');
       setMintResult(`❌ 错误: ${error.message || '未知错误'}`);
     } finally {
       setLoading(false);
