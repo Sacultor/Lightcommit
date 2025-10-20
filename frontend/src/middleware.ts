@@ -1,35 +1,9 @@
-import { NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
-
-// 需要认证的页面路由
-const protectedRoutes = [
-  '/dashboard/mint',
-  '/profiles',
-  '/contributions',
-]
-
-// 需要认证的 API 路由
-const protectedApiRoutes = [
-  '/api/auth/user',
-  '/api/contributions',
-]
-
-// 公开路由
-const publicRoutes = [
-  '/',
-  '/discover',
-  '/auth/callback',
-  '/auth/error',
-  '/api/auth/github',
-  '/api/auth/logout',
-  '/api/health',
-]
+import { NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
   // 对于所有请求，更新 Supabase session
-  return await updateSession(request)
+  return await updateSession(request);
 }
 
 export const config = {
@@ -43,4 +17,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};

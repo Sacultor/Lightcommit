@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-import type { CommitData as BlockchainCommitData } from '@/types/blockchain';
 
 export interface CommitData {
   repo: string;
@@ -26,7 +25,7 @@ export class ContractService {
   async mintCommit(
     to: string,
     commitData: CommitData,
-    metadataURI: string
+    metadataURI: string,
   ): Promise<{
     success: boolean;
     tokenId?: string;
@@ -80,7 +79,7 @@ export class ContractService {
   async batchMintCommits(
     to: string,
     commitsData: CommitData[],
-    metadataURIs: string[]
+    metadataURIs: string[],
   ): Promise<{
     success: boolean;
     transactionHash?: string;
@@ -205,7 +204,7 @@ export class ContractService {
       linesAdded: number,
       testsPass: boolean,
       merged: boolean
-    ) => void
+    ) => void,
   ) {
     this.contract.on(
       'CommitMinted',
@@ -217,9 +216,9 @@ export class ContractService {
           commit,
           Number(linesAdded),
           testsPass,
-          merged
+          merged,
         );
-      }
+      },
     );
   }
 

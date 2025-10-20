@@ -29,25 +29,25 @@ export function AboutSection() {
           <li>自循环经济：协议费用直接反哺贡献者与重要议题</li>
         </ul>
 
-        {/* Avatar Row */}
-        <div className="grid grid-cols-4 gap-0 mb-12" style={{ height: '400px' }}>
-          {[
-            { id: 1, src: '/assets/images/avatar-1.jpg', alt: '红帽猿猴' },
-            { id: 2, src: '/assets/images/avatar-2.jpg', alt: '灰帽猿猴' },
-            { id: 3, src: '/assets/images/avatar-3.jpg', alt: '眼镜猿猴' },
-            { id: 4, src: '/assets/images/avatar-4.jpg', alt: '兔子' },
-          ].map((avatar) => (
-            <div key={avatar.id} className="h-full border border-black overflow-hidden">
-              <img 
-                src={avatar.src} 
-                alt={avatar.alt}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
+          {/* Avatar Row */}
+          <div className="grid grid-cols-4 gap-0 mb-12" style={{ height: '400px' }}>
+            {[
+              { id: 1, src: '/assets/images/avatar-1.jpg', alt: '红帽猿猴' },
+              { id: 2, src: '/assets/images/avatar-2.jpg', alt: '灰帽猿猴' },
+              { id: 3, src: '/assets/images/avatar-3.jpg', alt: '眼镜猿猴' },
+              { id: 4, src: '/assets/images/avatar-4.jpg', alt: '兔子' },
+            ].map((avatar) => (
+              <div key={avatar.id} className="h-full border border-black overflow-hidden">
+                <img
+                  src={avatar.src}
+                  alt={avatar.alt}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
 
-        <div className="h-[3px] bg-black mt-12" />
+          <div className="h-[3px] bg-black mt-12" />
         </div>
       </div>
     </section>

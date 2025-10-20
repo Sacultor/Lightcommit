@@ -1,4 +1,4 @@
-import { getDatabaseClient } from '@/lib/database/index';
+import { getDatabaseClient, query } from '@/lib/database/index';
 import {
   Contribution,
   CreateContributionData,
@@ -143,7 +143,7 @@ export class ContributionRepository {
   // 更新贡献
   static async update(id: string, contributionData: UpdateContributionData): Promise<Contribution | null> {
     const supabase = getDatabaseClient();
-    
+
     const updateData: any = {};
     if (contributionData.status !== undefined) updateData.status = contributionData.status;
     if (contributionData.transactionHash !== undefined) updateData.transactionHash = contributionData.transactionHash;

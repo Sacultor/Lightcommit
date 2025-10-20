@@ -65,16 +65,13 @@ export class UserRepository {
    */
   static async create(userData: CreateUserData): Promise<User> {
     const supabase = getDatabaseClient();
-    
-    // 如果没有提供 ID，从当前登录用户获取
-    let userId = userData.id;
-    if (!userId) {
-      const { user } = await AuthService.getCurrentUser();
-      if (!user) {
-        throw new Error('未登录或无法获取用户信息');
-      }
-      userId = user.id;
+
+    // 从当前登录用户获取ID
+    const { user } = await AuthService.getUser();
+    if (!user) {
+      throw new Error('未登录或无法获取用户信息');
     }
+    const userId = user.id;
 
     const { data, error } = await supabase
       .from('users')
@@ -100,7 +97,7 @@ export class UserRepository {
    */
   static async update(id: string, userData: UpdateUserData): Promise<User | null> {
     const supabase = getDatabaseClient();
-    
+
     const updateData: any = {};
     if (userData.username !== undefined) updateData.username = userData.username;
     if (userData.email !== undefined) updateData.email = userData.email;
@@ -158,8 +155,8 @@ export class UserRepository {
    */
   static async getCurrentUser(): Promise<User | null> {
     try {
-      const { user: supabaseUser, error } = await AuthService.getCurrentUser();
-      
+      const { user: supabaseUser, error } = await AuthService.getUser();
+
       if (error || !supabaseUser) {
         return null;
       }
@@ -169,8 +166,16 @@ export class UserRepository {
 
       // 如果数据库中不存在，同步用户信息
       if (!user) {
-        const syncedUser = await AuthService.mapSupabaseUserToAppUser(supabaseUser);
-        user = syncedUser;
+        // 手动映射用户数据
+        const userData: CreateUserData = {
+          githubId: supabaseUser.user_metadata?.user_name || supabaseUser.user_metadata?.preferred_username || supabaseUser.user_metadata?.login || '',
+          username: supabaseUser.user_metadata?.user_name || supabaseUser.user_metadata?.preferred_username || supabaseUser.user_metadata?.login || '',
+          email: supabaseUser.email,
+          avatarUrl: supabaseUser.user_metadata?.avatar_url,
+          accessToken: undefined,
+          walletAddress: undefined,
+        };
+        user = await this.create(userData);
       }
 
       return user;
@@ -184,8 +189,8 @@ export class UserRepository {
    * 更新当前用户的钱包地址
    */
   static async updateWalletAddress(walletAddress: string): Promise<User | null> {
-    const { user: supabaseUser } = await AuthService.getCurrentUser();
-    
+    const { user: supabaseUser } = await AuthService.getUser();
+
     if (!supabaseUser) {
       throw new Error('用户未登录');
     }

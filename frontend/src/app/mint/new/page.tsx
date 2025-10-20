@@ -4,21 +4,21 @@ import { HeaderSimple } from '@/components/header-simple';
 import { FooterSimple } from '@/components/footer-simple';
 import { motion } from 'framer-motion';
 import { ChevronDown, Check, Wallet as WalletIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useWeb3 } from '@/lib/contexts/Web3Context';
 import { useContract } from '@/lib/hooks/useContract';
 import { ContractService } from '@/lib/services/contract.service';
 import toast from 'react-hot-toast';
 
-export default function NewMintPage() {
+function NewMintPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   // Web3 hooks
   const { account, isConnected, chainId, connect } = useWeb3();
   const contract = useContract();
-  
+
   const initialStep = parseInt(searchParams.get('step') || '1');
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [title, setTitle] = useState('');
@@ -27,7 +27,7 @@ export default function NewMintPage() {
   const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
   const [mintingProgress, setMintingProgress] = useState(0);
-  
+
   // 交易结果状态
   const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
@@ -65,7 +65,7 @@ export default function NewMintPage() {
     },
   ];
 
-  const getNetworkIcon = (iconType: string, color: string) => {
+  const getNetworkIcon = (iconType: string, _color: string) => {
     if (iconType === 'ethereum') {
       return (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="white">
@@ -133,7 +133,7 @@ export default function NewMintPage() {
       const result = await service.mintCommit(
         account,
         commitData,
-        `https://api.lightcommit.com/metadata/${Date.now()}`
+        `https://api.lightcommit.com/metadata/${Date.now()}`,
       );
 
       setMintingProgress(60);
@@ -142,13 +142,13 @@ export default function NewMintPage() {
         setMintingProgress(90);
         toast.dismiss('minting');
         toast.success('NFT 铸造成功！');
-        
+
         // 保存铸造结果
         setMintedTokenId(result.tokenId || null);
         setTransactionHash(result.transactionHash || null);
-        
+
         setMintingProgress(100);
-        
+
         // 延迟跳转到成功页面
         setTimeout(() => {
           setIsMinting(false);
@@ -160,11 +160,11 @@ export default function NewMintPage() {
     } catch (error: any) {
       console.error('Mint error:', error);
       toast.dismiss('minting');
-      
+
       // 区分不同类型的错误
       if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
         // 用户拒绝了交易
-        toast('交易已取消', { 
+        toast('交易已取消', {
           icon: '❌',
           duration: 3000,
         });
@@ -179,7 +179,7 @@ export default function NewMintPage() {
         const errorMsg = error.reason || error.message || '铸造失败，请重试';
         toast.error(errorMsg);
       }
-      
+
       setIsMinting(false);
       setMintingProgress(0);
     }
@@ -276,7 +276,7 @@ export default function NewMintPage() {
                 <div className="space-y-6">
                   {/* 钱包连接状态 */}
                   <div className="bg-white border-[3px] border-black rounded-2xl p-6"
-                       style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.8)' }}>
+                    style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.8)' }}>
                     <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                       <WalletIcon className="w-5 h-5" />
                       钱包状态
@@ -526,3 +526,10 @@ export default function NewMintPage() {
   );
 }
 
+export default function NewMintPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewMintPageContent />
+    </Suspense>
+  );
+}

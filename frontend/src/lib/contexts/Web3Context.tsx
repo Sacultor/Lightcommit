@@ -50,7 +50,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       }
 
       const chainIdHex = `0x${targetChainId.toString(16)}`;
-      
+
       try {
         await window.ethereum.request({
           method: 'wallet_switchEthereumChain',
@@ -61,12 +61,12 @@ export function Web3Provider({ children }: { children: ReactNode }) {
         // 如果网络不存在，尝试添加
         if (switchError.code === 4902) {
           const chainConfig = Object.values(SUPPORTED_CHAINS).find(
-            (chain) => chain.chainId === targetChainId
+            (chain) => chain.chainId === targetChainId,
           );
 
           if (chainConfig) {
             toast.loading('Adding network to MetaMask...', { id: 'adding-network' });
-            
+
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [
@@ -83,7 +83,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
                 },
               ],
             });
-            
+
             toast.dismiss('adding-network');
             toast.success(`${chainConfig.name} network added and switched successfully!`);
           } else {
@@ -98,7 +98,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
         // 用户拒绝切换网络 - 正常操作
         console.log('👤 User rejected network switch');
-        toast('Network switch cancelled', { 
+        toast('Network switch cancelled', {
           icon: '👋',
           duration: 2000,
         });
@@ -121,10 +121,10 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       }
 
       const provider = new ethers.BrowserProvider(window.ethereum);
-      
+
       // 请求账户访问
       await provider.send('eth_requestAccounts', []);
-      
+
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
       const network = await provider.getNetwork();
@@ -137,7 +137,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
 
       // 保存连接状态到 localStorage
       localStorage.setItem('walletConnected', 'true');
-      
+
       // 检查网络并自动切换
       if (currentChainId !== targetChainId) {
         // toast.error(`当前网络不正确，正在尝试切换到 Hardhat Local...`);
@@ -156,7 +156,7 @@ export function Web3Provider({ children }: { children: ReactNode }) {
       if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
         // 用户拒绝连接 - 这是正常操作，不显示错误
         console.log('👤 User rejected wallet connection');
-        toast('Connection cancelled', { 
+        toast('Connection cancelled', {
           icon: '👋',
           duration: 2000,
         });

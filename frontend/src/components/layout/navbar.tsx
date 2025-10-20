@@ -89,10 +89,10 @@ export default function Navbar({ variant = 'landing', showBorder = true, childre
       }} />
 
       <nav className={cn(
-          'relative z-10',
-          isLanding ? 'bg-transparent' : 'border-b border-gray-200/20 shadow-sm',
-          isDashboard && 'bg-gray-300/30 backdrop-blur-[27px]'
-        )}>
+        'relative z-10',
+        isLanding ? 'bg-transparent' : 'border-b border-gray-200/20 shadow-sm',
+        isDashboard && 'bg-gray-300/30 backdrop-blur-[27px]',
+      )}>
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
