@@ -160,7 +160,26 @@ export default function NewMintPage() {
     } catch (error: any) {
       console.error('Mint error:', error);
       toast.dismiss('minting');
-      toast.error(error.message || '铸造失败，请重试');
+      
+      // 区分不同类型的错误
+      if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
+        // 用户拒绝了交易
+        toast('交易已取消', { 
+          icon: '❌',
+          duration: 3000,
+        });
+      } else if (error.message?.includes('insufficient funds')) {
+        // 余额不足
+        toast.error('余额不足，请确保有足够的 ETH 支付 Gas 费用');
+      } else if (error.message?.includes('network')) {
+        // 网络错误
+        toast.error('网络连接失败，请检查您的网络设置');
+      } else {
+        // 其他错误
+        const errorMsg = error.reason || error.message || '铸造失败，请重试';
+        toast.error(errorMsg);
+      }
+      
       setIsMinting(false);
       setMintingProgress(0);
     }
