@@ -52,3 +52,4 @@ if (supabaseKeys.length === 0) {
 console.log('');
 console.log('✅ 检查完成！');
 
+
