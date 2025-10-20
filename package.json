@@ -45,5 +45,9 @@
   "bugs": {
     "url": "https://github.com/your-username/lightcommit/issues"
   },
-  "homepage": "https://github.com/your-username/lightcommit#readme"
+  "homepage": "https://github.com/your-username/lightcommit#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "pg": "^8.16.3"
+  }
 }

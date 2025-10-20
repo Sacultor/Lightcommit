@@ -1,19 +1,27 @@
 // Note: ethers will need to be installed as a dependency
 // import { ethers } from 'ethers';
-import { getConfig } from '../config';
-import { ContributionRepository } from '../database/repositories/contribution.repository';
-import { Contribution, ContributionStatus } from '../../types/contribution';
+import { getConfig } from '@/lib/config';
+import { ContributionRepository } from '@/lib/database/repositories/contribution.repository';
+import { Contribution, ContributionStatus } from '@/types/contribution';
+import {
+  NetworkInfo,
+  TransactionStatus,
+  ContractInfo,
+  EthersProvider,
+  EthersWallet,
+  EthersContract,
+} from '@/types/blockchain';
 
 export class BlockchainService {
-  private static provider: any = null; // ethers.JsonRpcProvider
-  private static wallet: any = null; // ethers.Wallet
-  private static contract: any = null; // ethers.Contract
+  private static provider: EthersProvider | null = null;
+  private static wallet: EthersWallet | null = null;
+  private static contract: EthersContract | null = null;
 
   // 初始化区块链连接
   static async initializeBlockchain(): Promise<void> {
     try {
       const config = getConfig();
-      
+
       if (!config.blockchain.rpcUrl) {
         throw new Error('RPC URL not configured');
       }
@@ -72,12 +80,16 @@ export class BlockchainService {
       const metadataUri = await this.uploadMetadataToIPFS(contribution);
 
       // 调用智能合约铸造 NFT
-      const tx = await this.contract.mintContribution(
+      if (!this.contract) {
+        throw new Error('Contract not initialized');
+      }
+
+      const tx = await (this.contract.mintContribution as any)(
         contribution.contributor,
         metadataUri,
         {
           gasLimit: 500000,
-        }
+        },
       );
 
       console.log('Minting transaction sent:', tx.hash);
@@ -105,7 +117,7 @@ export class BlockchainService {
   static async uploadMetadataToIPFS(contribution: Contribution): Promise<string> {
     try {
       const config = getConfig();
-      
+
       if (!config.ipfs.apiUrl) {
         throw new Error('IPFS API URL not configured');
       }
@@ -159,7 +171,7 @@ export class BlockchainService {
 
       const result = await response.json();
       const ipfsHash = result.Hash;
-      
+
       return `ipfs://${ipfsHash}`;
     } catch (error) {
       console.error('Failed to upload metadata to IPFS:', error);
@@ -208,7 +220,7 @@ export class BlockchainService {
   }
 
   // 获取网络信息
-  static async getNetworkInfo(): Promise<any> {
+  static async getNetworkInfo(): Promise<NetworkInfo> {
     await this.ensureInitialized();
 
     if (!this.provider) {
@@ -233,7 +245,7 @@ export class BlockchainService {
   }
 
   // 获取交易状态
-  static async getTransactionStatus(txHash: string): Promise<any> {
+  static async getTransactionStatus(txHash: string): Promise<TransactionStatus> {
     await this.ensureInitialized();
 
     if (!this.provider) {
@@ -244,11 +256,37 @@ export class BlockchainService {
       const tx = await this.provider.getTransaction(txHash);
       const receipt = await this.provider.getTransactionReceipt(txHash);
 
+      if (!tx) {
+        throw new Error('Transaction not found');
+      }
+
       return {
-        transaction: tx,
-        receipt,
+        transaction: {
+          hash: tx.hash,
+          from: tx.from,
+          to: tx.to || '',
+          value: tx.value,
+          gasLimit: tx.gasLimit,
+          gasPrice: tx.gasPrice,
+          nonce: tx.nonce,
+          data: tx.data,
+          blockNumber: tx.blockNumber,
+          blockHash: tx.blockHash,
+          transactionIndex: tx.transactionIndex,
+        },
+        receipt: receipt ? {
+          transactionHash: receipt.transactionHash,
+          transactionIndex: receipt.transactionIndex,
+          blockHash: receipt.blockHash,
+          blockNumber: receipt.blockNumber,
+          from: receipt.from,
+          to: receipt.to || '',
+          gasUsed: receipt.gasUsed,
+          cumulativeGasUsed: receipt.cumulativeGasUsed,
+          status: receipt.status || 0,
+          logs: receipt.logs,
+        } : null,
         status: receipt?.status === 1 ? 'success' : receipt?.status === 0 ? 'failed' : 'pending',
-        confirmations: receipt?.confirmations || 0,
       };
     } catch (error) {
       console.error('Failed to get transaction status:', error);
@@ -279,7 +317,7 @@ export class BlockchainService {
   }
 
   // 获取合约信息
-  static async getContractInfo(): Promise<any> {
+  static async getContractInfo(): Promise<ContractInfo> {
     await this.ensureInitialized();
 
     if (!this.contract) {
@@ -288,9 +326,13 @@ export class BlockchainService {
 
     try {
       const config = getConfig();
-      
+
+      if (!config.blockchain.contractAddress) {
+        throw new Error('Contract address not configured');
+      }
+
       // 这里假设合约有一些标准方法
-      const contractInfo = {
+      const contractInfo: ContractInfo = {
         address: config.blockchain.contractAddress,
         // 可以添加更多合约特定的信息
       };
@@ -328,7 +370,7 @@ export class BlockchainService {
     }
 
     try {
-      const actualOwner = await this.contract.ownerOf(tokenId);
+      const actualOwner = await (this.contract.ownerOf as any)(tokenId);
       return actualOwner.toLowerCase() === ownerAddress.toLowerCase();
     } catch (error) {
       console.error('Failed to verify NFT ownership:', error);

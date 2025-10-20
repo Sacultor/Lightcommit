@@ -1,29 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ContributionService } from '../../../../lib/services/contribution.service';
-import { AuthService } from '../../../../lib/services/auth.service';
+import { ContributionService } from '@/lib/services/contribution.service';
+import { AuthService } from '@/lib/services/auth.service';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 验证用户身份
     const authorization = request.headers.get('authorization');
-    
+
     if (!authorization || !authorization.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Missing or invalid authorization header' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    const token = authorization.substring(7);
-    const user = await AuthService.getUserFromToken(token);
+    // 使用新的认证方法
+    const { user, error } = await AuthService.getServerUser();
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -34,7 +34,7 @@ export async function GET(
     if (!contributionId) {
       return NextResponse.json(
         { error: 'Missing contribution ID' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -44,7 +44,7 @@ export async function GET(
     if (!contribution) {
       return NextResponse.json(
         { error: 'Contribution not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -54,7 +54,7 @@ export async function GET(
     console.error('Get contribution error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch contribution' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,10 +1,17 @@
-import { ContributionRepository } from '../database/repositories/contribution.repository';
-import { 
-  Contribution, 
+import { ContributionRepository } from '@/lib/database/repositories/contribution.repository';
+import {
+  Contribution,
   QueryContributionParams,
   ContributionType,
-  ContributionStatus 
-} from '../../types/contribution';
+  ContributionStatus,
+  ContributionStats,
+  ContributionTrends,
+  MonthlyStats,
+  TypeDistribution,
+  StatusDistribution,
+  ContributorDistribution,
+  TopContributor,
+} from '@/types/contribution';
 
 export class ContributionService {
   // 获取所有贡献
@@ -28,13 +35,13 @@ export class ContributionService {
     return ContributionRepository.findAll(query, limit, offset);
   }
 
-  // 获取贡献统计信息
-  static async getStats(userId?: string): Promise<any> {
+  // 获取统计信息
+  static async getStats(userId?: string): Promise<ContributionStats> {
     return ContributionRepository.getStats(userId);
   }
 
-  // 获取用户的贡献统计
-  static async getUserContributionStats(userId: string): Promise<any> {
+  // 获取用户贡献统计
+  static async getUserContributionStats(userId: string): Promise<ContributionStats> {
     const stats = await ContributionRepository.getStats(userId);
     const contributions = await ContributionRepository.findByUserId(userId);
 
@@ -49,61 +56,69 @@ export class ContributionService {
       typeDistribution,
       statusDistribution,
       totalContributions: contributions.length,
-      recentContributions: contributions.slice(0, 10), // 最近 10 个贡献
     };
   }
 
-  // 获取仓库的贡献统计
-  static async getRepositoryContributionStats(repositoryId: string): Promise<any> {
+  // 获取仓库贡献统计
+  static async getRepositoryContributionStats(repositoryId: string): Promise<ContributionStats> {
     const query: QueryContributionParams = { repositoryId };
     const contributions = await ContributionRepository.findAll(query);
 
-    const stats = {
-      total: contributions.length,
-      byType: this.calculateTypeDistribution(contributions),
-      byStatus: this.calculateStatusDistribution(contributions),
-      byContributor: this.calculateContributorDistribution(contributions),
+    const mintedCount = contributions.filter(c => c.status === ContributionStatus.MINTED).length;
+    const pendingCount = contributions.filter(c => c.status === ContributionStatus.PENDING).length;
+
+    const stats: ContributionStats = {
+      totalContributions: contributions.length,
+      mintedContributions: mintedCount,
+      pendingContributions: pendingCount,
       monthlyStats: this.calculateMonthlyStats(contributions),
+      typeDistribution: this.calculateTypeDistribution(contributions),
+      statusDistribution: this.calculateStatusDistribution(contributions),
+      contributorDistribution: this.calculateContributorDistribution(contributions),
     };
 
     return stats;
   }
 
   // 获取全局统计信息
-  static async getGlobalStats(): Promise<any> {
+  static async getGlobalStats(): Promise<ContributionStats> {
     const allContributions = await ContributionRepository.findAll({});
-    
+
+    const mintedCount = allContributions.filter(c => c.status === ContributionStatus.MINTED).length;
+    const pendingCount = allContributions.filter(c => c.status === ContributionStatus.PENDING).length;
+
     return {
       totalContributions: allContributions.length,
+      mintedContributions: mintedCount,
+      pendingContributions: pendingCount,
+      monthlyStats: this.calculateMonthlyStats(allContributions),
       typeDistribution: this.calculateTypeDistribution(allContributions),
       statusDistribution: this.calculateStatusDistribution(allContributions),
-      monthlyStats: this.calculateMonthlyStats(allContributions),
       topContributors: this.getTopContributors(allContributions, 10),
-      recentActivity: allContributions.slice(0, 20),
     };
   }
 
   // 搜索贡献
   static async searchContributions(
-    searchTerm: string, 
+    searchTerm: string,
     filters: QueryContributionParams = {},
     limit = 50,
-    offset = 0
+    offset = 0,
   ): Promise<Contribution[]> {
     // 这里简化实现，实际应该在数据库层面进行全文搜索
     const allContributions = await ContributionRepository.findAll(filters, 1000, 0);
-    
-    const filteredContributions = allContributions.filter(contribution => 
+
+    const filteredContributions = allContributions.filter(contribution =>
       contribution.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contribution.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contribution.contributor.toLowerCase().includes(searchTerm.toLowerCase())
+      contribution.contributor.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
     return filteredContributions.slice(offset, offset + limit);
   }
 
   // 计算月度统计
-  private static calculateMonthlyStats(contributions: Contribution[]): any[] {
+  private static calculateMonthlyStats(contributions: Contribution[]): MonthlyStats[] {
     const monthlyData: { [key: string]: number } = {};
 
     contributions.forEach(contribution => {
@@ -118,7 +133,7 @@ export class ContributionService {
   }
 
   // 计算类型分布
-  private static calculateTypeDistribution(contributions: Contribution[]): any[] {
+  private static calculateTypeDistribution(contributions: Contribution[]): TypeDistribution[] {
     const typeCount: { [key in ContributionType]?: number } = {};
 
     contributions.forEach(contribution => {
@@ -129,7 +144,7 @@ export class ContributionService {
   }
 
   // 计算状态分布
-  private static calculateStatusDistribution(contributions: Contribution[]): any[] {
+  private static calculateStatusDistribution(contributions: Contribution[]): StatusDistribution[] {
     const statusCount: { [key in ContributionStatus]?: number } = {};
 
     contributions.forEach(contribution => {
@@ -140,7 +155,7 @@ export class ContributionService {
   }
 
   // 计算贡献者分布
-  private static calculateContributorDistribution(contributions: Contribution[]): any[] {
+  private static calculateContributorDistribution(contributions: Contribution[]): ContributorDistribution[] {
     const contributorCount: { [key: string]: number } = {};
 
     contributions.forEach(contribution => {
@@ -153,8 +168,8 @@ export class ContributionService {
   }
 
   // 获取顶级贡献者
-  private static getTopContributors(contributions: Contribution[], limit: number): any[] {
-    const contributorStats: { [key: string]: any } = {};
+  private static getTopContributors(contributions: Contribution[], limit: number): TopContributor[] {
+    const contributorStats: { [key: string]: TopContributor } = {};
 
     contributions.forEach(contribution => {
       if (!contributorStats[contribution.contributor]) {
@@ -168,7 +183,7 @@ export class ContributionService {
 
       const stats = contributorStats[contribution.contributor];
       stats.totalContributions++;
-      
+
       if (contribution.status === ContributionStatus.MINTED) {
         stats.mintedContributions++;
       }
@@ -177,25 +192,25 @@ export class ContributionService {
     });
 
     return Object.values(contributorStats)
-      .sort((a: any, b: any) => b.totalContributions - a.totalContributions)
+      .sort((a, b) => b.totalContributions - a.totalContributions)
       .slice(0, limit);
   }
 
   // 获取贡献趋势
-  static async getContributionTrends(days = 30): Promise<any> {
+  static async getContributionTrends(days = 30): Promise<ContributionTrends> {
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
     const allContributions = await ContributionRepository.findAll({});
-    
+
     const filteredContributions = allContributions.filter(contribution => {
       const contributionDate = new Date(contribution.createdAt);
       return contributionDate >= startDate && contributionDate <= endDate;
     });
 
     const dailyStats: { [key: string]: number } = {};
-    
+
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       const dateKey = d.toISOString().split('T')[0];
       dailyStats[dateKey] = 0;
@@ -208,6 +223,14 @@ export class ContributionService {
       }
     });
 
-    return Object.entries(dailyStats).map(([date, count]) => ({ date, count }));
+    const dailyContributions = Object.entries(dailyStats).map(([date, count]) => ({ date, count }));
+    const totalContributions = filteredContributions.length;
+    const averageDaily = totalContributions / days;
+
+    return {
+      dailyContributions,
+      totalContributions,
+      averageDaily,
+    };
   }
 }

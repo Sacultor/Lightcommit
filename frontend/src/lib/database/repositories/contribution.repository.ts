@@ -1,12 +1,27 @@
-import { query, transaction } from '../index';
-import { 
-  Contribution, 
-  CreateContributionData, 
-  UpdateContributionData, 
+import { getDatabaseClient } from '@/lib/database/index';
+import {
+  Contribution,
+  CreateContributionData,
+  UpdateContributionData,
   QueryContributionParams,
   ContributionType,
-  ContributionStatus 
-} from '../../../types/contribution';
+  ContributionStatus,
+  ContributionStats,
+} from '@/types/contribution';
+
+
+
+// 数据库查询结果接口
+interface DbContributionStats {
+  total: string;
+  minted: string;
+  pending: string;
+  minting: string;
+  failed: string;
+  commits: string;
+  pull_requests: string;
+  issues: string;
+}
 
 export class ContributionRepository {
   // 根据 ID 查找贡献
@@ -17,9 +32,9 @@ export class ContributionRepository {
        LEFT JOIN users u ON c.user_id = u.id
        LEFT JOIN repositories r ON c.repository_id = r.id
        WHERE c.id = $1`,
-      [id]
+      [id],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;
   }
 
@@ -31,9 +46,9 @@ export class ContributionRepository {
        LEFT JOIN users u ON c.user_id = u.id
        LEFT JOIN repositories r ON c.repository_id = r.id
        WHERE c.github_id = $1`,
-      [githubId]
+      [githubId],
     );
-    
+
     return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;
   }
 
@@ -44,22 +59,22 @@ export class ContributionRepository {
     let paramIndex = 1;
 
     const conditions = [];
-    
+
     if (params.type) {
       conditions.push(`c.type = $${paramIndex++}`);
       values.push(params.type);
     }
-    
+
     if (params.status) {
       conditions.push(`c.status = $${paramIndex++}`);
       values.push(params.status);
     }
-    
+
     if (params.userId) {
       conditions.push(`c.user_id = $${paramIndex++}`);
       values.push(params.userId);
     }
-    
+
     if (params.repositoryId) {
       conditions.push(`c.repository_id = $${paramIndex++}`);
       values.push(params.repositoryId);
@@ -79,9 +94,9 @@ export class ContributionRepository {
        ${whereClause}
        ORDER BY c.created_at DESC
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
-      values
+      values,
     );
-    
+
     return result.rows.map(this.mapRowToContribution);
   }
 
@@ -95,82 +110,68 @@ export class ContributionRepository {
        WHERE c.user_id = $1
        ORDER BY c.created_at DESC
        LIMIT $2 OFFSET $3`,
-      [userId, limit, offset]
+      [userId, limit, offset],
     );
-    
+
     return result.rows.map(this.mapRowToContribution);
   }
 
   // 创建贡献
   static async create(contributionData: CreateContributionData): Promise<Contribution> {
-    const result = await query(
-      `INSERT INTO contributions (
-        github_id, type, user_id, repository_id, contributor, title, description, url, metadata, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())
-      RETURNING *`,
-      [
-        contributionData.githubId,
-        contributionData.type,
-        contributionData.userId,
-        contributionData.repositoryId,
-        contributionData.contributor,
-        contributionData.title,
-        contributionData.description,
-        contributionData.url,
-        JSON.stringify(contributionData.metadata || {}),
-      ]
-    );
-    
-    return this.mapRowToContribution(result.rows[0]);
+    const supabase = getDatabaseClient();
+    const { data, error } = await supabase
+      .from('contributions')
+      .insert({
+        githubId: contributionData.githubId,
+        type: contributionData.type,
+        userId: contributionData.userId,
+        repositoryId: contributionData.repositoryId,
+        contributor: contributionData.contributor,
+        title: contributionData.title,
+        description: contributionData.description,
+        url: contributionData.url,
+        metadata: contributionData.metadata || {},
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return this.mapRowToContribution(data);
   }
 
   // 更新贡献
   static async update(id: string, contributionData: UpdateContributionData): Promise<Contribution | null> {
-    const setClause = [];
-    const values = [];
-    let paramIndex = 1;
+    const supabase = getDatabaseClient();
+    
+    const updateData: any = {};
+    if (contributionData.status !== undefined) updateData.status = contributionData.status;
+    if (contributionData.transactionHash !== undefined) updateData.transactionHash = contributionData.transactionHash;
+    if (contributionData.tokenId !== undefined) updateData.tokenId = contributionData.tokenId;
+    if (contributionData.metadataUri !== undefined) updateData.metadataUri = contributionData.metadataUri;
+    if (contributionData.metadata !== undefined) updateData.metadata = contributionData.metadata;
 
-    if (contributionData.status !== undefined) {
-      setClause.push(`status = $${paramIndex++}`);
-      values.push(contributionData.status);
-    }
-    if (contributionData.transactionHash !== undefined) {
-      setClause.push(`transaction_hash = $${paramIndex++}`);
-      values.push(contributionData.transactionHash);
-    }
-    if (contributionData.tokenId !== undefined) {
-      setClause.push(`token_id = $${paramIndex++}`);
-      values.push(contributionData.tokenId);
-    }
-    if (contributionData.metadataUri !== undefined) {
-      setClause.push(`metadata_uri = $${paramIndex++}`);
-      values.push(contributionData.metadataUri);
-    }
-    if (contributionData.metadata !== undefined) {
-      setClause.push(`metadata = $${paramIndex++}`);
-      values.push(JSON.stringify(contributionData.metadata));
-    }
-
-    if (setClause.length === 0) {
+    if (Object.keys(updateData).length === 0) {
       return this.findById(id);
     }
 
-    setClause.push(`updated_at = NOW()`);
-    values.push(id);
+    const { data, error } = await supabase
+      .from('contributions')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
 
-    const result = await query(
-      `UPDATE contributions SET ${setClause.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
-      values
-    );
-    
-    return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;
+    if (error) throw error;
+
+    return data ? this.mapRowToContribution(data) : null;
   }
 
   // 获取统计信息
-  static async getStats(userId?: string): Promise<any> {
+  static async getStats(userId?: string): Promise<ContributionStats> {
     let whereClause = '';
     const values: unknown[] = [];
-    
+
     if (userId) {
       whereClause = 'WHERE user_id = $1';
       values.push(userId);
@@ -187,10 +188,29 @@ export class ContributionRepository {
         COUNT(CASE WHEN type = 'pull_request' THEN 1 END) as pull_requests,
         COUNT(CASE WHEN type = 'issue' THEN 1 END) as issues
        FROM contributions ${whereClause}`,
-      values
+      values,
     );
-    
-    return result.rows[0];
+
+    const dbStats = result.rows[0] as DbContributionStats;
+
+    // 转换为正确的ContributionStats格式
+    return {
+      totalContributions: parseInt(dbStats.total),
+      mintedContributions: parseInt(dbStats.minted),
+      pendingContributions: parseInt(dbStats.pending),
+      monthlyStats: [], // 这里需要额外的查询来获取月度统计
+      typeDistribution: [
+        { type: 'commit', count: parseInt(dbStats.commits) },
+        { type: 'pull_request', count: parseInt(dbStats.pull_requests) },
+        { type: 'issue', count: parseInt(dbStats.issues) },
+      ],
+      statusDistribution: [
+        { status: 'minted', count: parseInt(dbStats.minted) },
+        { status: 'pending', count: parseInt(dbStats.pending) },
+        { status: 'minting', count: parseInt(dbStats.minting) },
+        { status: 'failed', count: parseInt(dbStats.failed) },
+      ],
+    };
   }
 
   // 将数据库行映射为 Contribution 对象

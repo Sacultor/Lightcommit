@@ -2,75 +2,50 @@
 
 区块链开源贡献证明平台
 
-## 🚀 快速开始
+## 🛠️ 技术栈
+- **前端**: Next.js 15 + TypeScript + Tailwind CSS
+- **区块链**: Hardhat + Solidity
+- **包管理**: pnpm (必须使用)
 
-### 环境要求
-- Node.js 18+
-- pnpm 8+
-
-### 安装依赖
+## ⚡ 快速开始
 
 ```bash
-# 克隆项目
-git clone https://github.com/your-username/lightcommit.git
-cd lightcommit
-
-# 安装根目录依赖
+# 安装依赖
 pnpm install
+
+# 启动开发服务器
+pnpm dev
 ```
 
-### 开发
+访问: http://localhost:3000
+
+## 📋 常用命令
+
 ```bash
-# 启动前端开发服务器
-pnpm dev
+# 前端开发
+pnpm dev              # 启动前端服务器
+pnpm build            # 构建前端应用
 
-# 编译智能合约
-pnpm compile
+# 区块链开发  
+pnpm compile          # 编译智能合约
+pnpm test             # 运行合约测试
+pnpm node             # 启动本地区块链
 
-# 运行测试
-pnpm test
-
-# 启动本地区块链节点
-pnpm node
+# 工具命令
+pnpm lint             # 代码检查
+pnpm clean            # 清理缓存
 ```
 
 ## 📁 项目结构
 
 ```
-lightcommit/
-├── frontend/          # Next.js 前端应用
-│   ├── src/
-│   │   ├── app/       # App Router 页面
-│   │   ├── components/ # React 组件
-│   │   └── lib/       # 工具函数
-│   └── package.json
-├── hardhat/           # Hardhat 区块链开发环境
-│   ├── contracts/     # 智能合约
-│   ├── scripts/       # 部署脚本
-│   ├── test/         # 合约测试
-│   └── package.json
-├── docs/             # 项目文档
-└── package.json      # 根目录配置
+├── frontend/         # Next.js 前端 (端口 3000)
+├── hardhat/          # 智能合约开发
+└── scripts/          # 数据库脚本
 ```
 
-## 🤝 贡献指南
+## ⚠️ 注意事项
 
-我们欢迎所有形式的贡献！请查看 [CONTRIBUTING.md](./CONTRIBUTING.md) 了解详细信息。
-
-### 开发流程
-1. Fork 本仓库
-2. 创建功能分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 创建 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🔗 相关链接
-
-- [项目文档](./docs/)
-- [API 文档](./docs/api.md)
-- [部署指南](./docs/deployment.md)
-以上是黑客松前完成的部分
+- **必须使用 pnpm**，不要使用 npm 或 yarn
+- Node.js 18+ 版本
+- 如遇构建问题，运行 `rm -rf frontend/.next && pnpm dev`
