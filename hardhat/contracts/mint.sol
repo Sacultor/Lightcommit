@@ -87,7 +87,7 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
         address to,
         CommitData memory commitData,
         string memory metadataURI
-    ) external onlyOwner whenNotPaused nonReentrant {
+    ) external whenNotPaused nonReentrant {
         require(to != address(0), "Invalid recipient address");
         require(!_mintedCommits[commitData.commit], "Commit already minted");
         require(_tokenIdCounter.current() <= MAX_SUPPLY, "Max supply exceeded");
@@ -125,7 +125,7 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
         address to,
         CommitData[] memory commitsData,
         string[] memory metadataURIs
-    ) external onlyOwner whenNotPaused nonReentrant {
+    ) external whenNotPaused nonReentrant {
         require(to != address(0), "Invalid recipient address");
         require(commitsData.length == metadataURIs.length, "Arrays length mismatch");
         require(commitsData.length > 0, "Empty array");

@@ -3,13 +3,22 @@
 import { HeaderSimple } from '@/components/header-simple';
 import { FooterSimple } from '@/components/footer-simple';
 import { motion } from 'framer-motion';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Wallet as WalletIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useWeb3 } from '@/lib/contexts/Web3Context';
+import { useContract } from '@/lib/hooks/useContract';
+import { ContractService } from '@/lib/services/contract.service';
+import toast from 'react-hot-toast';
 
 export default function NewMintPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  
+  // Web3 hooks
+  const { account, isConnected, chainId, connect } = useWeb3();
+  const contract = useContract();
+  
   const initialStep = parseInt(searchParams.get('step') || '1');
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [title, setTitle] = useState('');
@@ -18,6 +27,10 @@ export default function NewMintPage() {
   const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
   const [isMinting, setIsMinting] = useState(false);
   const [mintingProgress, setMintingProgress] = useState(0);
+  
+  // 交易结果状态
+  const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
 
   const networks = [
     {
@@ -70,23 +83,87 @@ export default function NewMintPage() {
 
   const selectedNetworkData = networks.find(n => n.name === selectedNetwork);
 
-  const handleMint = () => {
-    setIsMinting(true);
-    setMintingProgress(0);
+  const handleMint = async () => {
+    // 检查钱包连接
+    if (!isConnected || !account) {
+      toast.error('请先连接钱包');
+      try {
+        await connect();
+      } catch (error) {
+        console.error('Connect wallet failed:', error);
+      }
+      return;
+    }
 
-    const interval = setInterval(() => {
-      setMintingProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsMinting(false);
-            setCurrentStep(3);
-          }, 500);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 300);
+    // 检查合约实例
+    if (!contract) {
+      toast.error('合约未初始化，请检查配置');
+      return;
+    }
+
+    // 验证输入
+    if (!title.trim()) {
+      toast.error('请输入 NFT 标题');
+      return;
+    }
+
+    setIsMinting(true);
+    setMintingProgress(10);
+
+    try {
+      const service = new ContractService(contract);
+
+      // 构造 CommitData
+      const commitData = {
+        repo: 'lightcommit/demo',
+        commit: `commit-${Date.now()}`,
+        linesAdded: 100,
+        linesDeleted: 50,
+        testsPass: true,
+        timestamp: Math.floor(Date.now() / 1000),
+        author: account,
+        message: title,
+        merged: true,
+      };
+
+      setMintingProgress(30);
+      toast.loading('正在准备交易...', { id: 'minting' });
+
+      // 调用真实的合约铸造
+      const result = await service.mintCommit(
+        account,
+        commitData,
+        `https://api.lightcommit.com/metadata/${Date.now()}`
+      );
+
+      setMintingProgress(60);
+
+      if (result.success) {
+        setMintingProgress(90);
+        toast.dismiss('minting');
+        toast.success('NFT 铸造成功！');
+        
+        // 保存铸造结果
+        setMintedTokenId(result.tokenId || null);
+        setTransactionHash(result.transactionHash || null);
+        
+        setMintingProgress(100);
+        
+        // 延迟跳转到成功页面
+        setTimeout(() => {
+          setIsMinting(false);
+          setCurrentStep(3);
+        }, 500);
+      } else {
+        throw new Error(result.error || '铸造失败');
+      }
+    } catch (error: any) {
+      console.error('Mint error:', error);
+      toast.dismiss('minting');
+      toast.error(error.message || '铸造失败，请重试');
+      setIsMinting(false);
+      setMintingProgress(0);
+    }
   };
 
   const steps = [
@@ -178,6 +255,42 @@ export default function NewMintPage() {
             {currentStep === 2 && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
+                  {/* 钱包连接状态 */}
+                  <div className="bg-white border-[3px] border-black rounded-2xl p-6"
+                       style={{ boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.8)' }}>
+                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                      <WalletIcon className="w-5 h-5" />
+                      钱包状态
+                    </h3>
+                    {!isConnected ? (
+                      <button
+                        onClick={connect}
+                        className="w-full px-6 py-3 bg-red-400 hover:bg-red-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+                      >
+                        <WalletIcon className="w-5 h-5" />
+                        连接钱包以铸造
+                      </button>
+                    ) : (
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">地址:</span>
+                          <span className="font-mono font-bold">{account?.slice(0, 6)}...{account?.slice(-4)}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-100">
+                          <span className="text-gray-600">网络:</span>
+                          <span className="font-mono">Chain ID: {chainId}</span>
+                        </div>
+                        <div className="flex justify-between py-2">
+                          <span className="text-gray-600">状态:</span>
+                          <span className="text-green-600 font-bold flex items-center gap-1">
+                            <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+                            已连接
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="relative">
                     <button
                       onClick={() => setShowNetworkDropdown(!showNetworkDropdown)}
@@ -266,9 +379,14 @@ export default function NewMintPage() {
                     {!isMinting ? (
                       <button
                         onClick={handleMint}
-                        className="absolute bottom-6 right-6 px-8 py-3 bg-black text-white rounded-full font-bold text-base shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
+                        disabled={!isConnected}
+                        className={`absolute bottom-6 right-6 px-8 py-3 rounded-full font-bold text-base transition-all ${
+                          isConnected
+                            ? 'bg-black text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:translate-x-[-1px] hover:translate-y-[-1px] cursor-pointer'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]'
+                        }`}
                       >
-                        Mint
+                        {isConnected ? 'Mint NFT' : '请先连接钱包'}
                       </button>
                     ) : (
                       <div className="absolute bottom-6 left-6 right-6">
@@ -284,10 +402,10 @@ export default function NewMintPage() {
                           />
                         </div>
                         <p className="text-xs text-gray-500 mt-2 text-center">
-                          {mintingProgress < 30 && 'Preparing transaction...'}
-                          {mintingProgress >= 30 && mintingProgress < 60 && 'Confirming on blockchain...'}
-                          {mintingProgress >= 60 && mintingProgress < 90 && 'Uploading metadata...'}
-                          {mintingProgress >= 90 && 'Finalizing...'}
+                          {mintingProgress < 30 && '准备交易...'}
+                          {mintingProgress >= 30 && mintingProgress < 60 && '等待区块链确认...'}
+                          {mintingProgress >= 60 && mintingProgress < 90 && '写入合约数据...'}
+                          {mintingProgress >= 90 && '完成铸造...'}
                         </p>
                       </div>
                     )}
@@ -323,15 +441,54 @@ export default function NewMintPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="text-lg text-gray-600 mb-12 text-center max-w-lg"
+                  className="text-lg text-gray-600 mb-8 text-center max-w-lg"
                 >
                   Your digital collectible is now secured on the blockchain.
                 </motion.p>
 
+                {/* 交易详情 */}
+                {transactionHash && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="mb-8 bg-white border-[3px] border-black rounded-2xl p-6 w-full max-w-lg"
+                    style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,0.8)' }}
+                  >
+                    <h3 className="font-bold text-lg mb-4 text-center">交易详情</h3>
+                    <div className="space-y-3">
+                      {mintedTokenId && (
+                        <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                          <span className="text-gray-600">Token ID:</span>
+                          <span className="font-mono font-bold text-lg">{mintedTokenId}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span className="text-gray-600">接收地址:</span>
+                        <span className="font-mono text-sm">{account?.slice(0, 6)}...{account?.slice(-4)}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-2">
+                        <span className="text-gray-600">交易哈希:</span>
+                        <a
+                          href={`${process.env.NEXT_PUBLIC_EXPLORER_URL || 'https://sepolia.etherscan.io'}/tx/${transactionHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-blue-600 hover:text-blue-800 hover:underline text-xs flex items-center gap-1"
+                        >
+                          {transactionHash.slice(0, 10)}...{transactionHash.slice(-8)}
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
                 <motion.button
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
+                  transition={{ delay: 0.8 }}
                   onClick={() => router.push('/collections')}
                   className="px-12 py-4 bg-white border-[3px] border-black rounded-2xl font-bold text-lg hover:bg-gray-50 transition-colors"
                   style={{

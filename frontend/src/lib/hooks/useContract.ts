@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { ethers } from 'ethers';
 import { useWeb3 } from '@/lib/contexts/Web3Context';
-import ContractABI from '@/../hardhat/contracts-abi.json';
+import ContractABI from '@/lib/contracts/CommitNFT.json';
 
 export function useContract() {
   const { signer, provider } = useWeb3();
