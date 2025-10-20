@@ -1,0 +1,175 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {"internalType": "string", "name": "name", "type": "string"},
+        {"internalType": "string", "name": "symbol", "type": "string"},
+        {"internalType": "string", "name": "baseTokenURI", "type": "string"}
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {"indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256"},
+        {"indexed": true, "internalType": "address", "name": "to", "type": "address"},
+        {"indexed": true, "internalType": "bytes32", "name": "commitHash", "type": "bytes32"},
+        {"indexed": false, "internalType": "uint32", "name": "timestamp", "type": "uint32"},
+        {"indexed": false, "internalType": "bool", "name": "isMerged", "type": "bool"},
+        {"indexed": false, "internalType": "string", "name": "metadataURI", "type": "string"}
+      ],
+      "name": "CommitMinted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {"indexed": true, "internalType": "address", "name": "to", "type": "address"},
+        {"indexed": false, "internalType": "uint256[]", "name": "tokenIds", "type": "uint256[]"},
+        {"indexed": false, "internalType": "uint256", "name": "totalGasUsed", "type": "uint256"}
+      ],
+      "name": "BatchMinted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {"indexed": false, "internalType": "string", "name": "newBaseURI", "type": "string"}
+      ],
+      "name": "BaseURIUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {"internalType": "address", "name": "to", "type": "address"},
+        {"internalType": "string", "name": "commitHash", "type": "string"},
+        {"internalType": "uint32", "name": "timestamp", "type": "uint32"},
+        {"internalType": "bool", "name": "isMerged", "type": "bool"},
+        {"internalType": "string", "name": "metadataURI", "type": "string"}
+      ],
+      "name": "mintCommit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {"internalType": "address", "name": "to", "type": "address"},
+        {"internalType": "string[]", "name": "commitHashes", "type": "string[]"},
+        {"internalType": "uint32[]", "name": "timestamps", "type": "uint32[]"},
+        {"internalType": "bool[]", "name": "isMergedArray", "type": "bool[]"},
+        {"internalType": "string[]", "name": "metadataURIs", "type": "string[]"}
+      ],
+      "name": "batchMintCommits",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {"internalType": "uint256", "name": "tokenId", "type": "uint256"}
+      ],
+      "name": "getCommitData",
+      "outputs": [
+        {"internalType": "bytes32", "name": "commitHash", "type": "bytes32"},
+        {"internalType": "uint32", "name": "timestamp", "type": "uint32"},
+        {"internalType": "bool", "name": "isMerged", "type": "bool"}
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {"internalType": "string", "name": "commitHash", "type": "string"}
+      ],
+      "name": "isCommitMinted",
+      "outputs": [
+        {"internalType": "bool", "name": "", "type": "bool"}
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {"internalType": "address", "name": "user", "type": "address"}
+      ],
+      "name": "getUserTokenCount",
+      "outputs": [
+        {"internalType": "uint256", "name": "", "type": "uint256"}
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getCurrentTokenId",
+      "outputs": [
+        {"internalType": "uint256", "name": "", "type": "uint256"}
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalSupply",
+      "outputs": [
+        {"internalType": "uint256", "name": "", "type": "uint256"}
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {"internalType": "string", "name": "baseTokenURI", "type": "string"}
+      ],
+      "name": "setBaseURI",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "pause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "unpause",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "emergencyWithdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {"internalType": "uint256", "name": "tokenId", "type": "uint256"}
+      ],
+      "name": "tokenURI",
+      "outputs": [
+        {"internalType": "string", "name": "", "type": "string"}
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {"internalType": "bytes4", "name": "interfaceId", "type": "bytes4"}
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+        {"internalType": "bool", "name": "", "type": "bool"}
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}
