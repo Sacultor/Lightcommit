@@ -40,7 +40,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
 
   const handleWalletClick = async (walletName: string) => {
     if (walletName !== 'MetaMask') {
-      toast.error('暂不支持该钱包，请使用 MetaMask');
+      toast.error('This wallet is not supported, please use MetaMask');
       return;
     }
 
@@ -56,7 +56,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       onClose();
     } catch (error: any) {
       console.error('Connect error:', error);
-      toast.error(error.message || '连接失败');
+      toast.error(error.message || 'Connection failed');
     } finally {
       setConnecting(false);
     }
