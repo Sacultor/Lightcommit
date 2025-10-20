@@ -33,8 +33,8 @@ export default function AuthCallback() {
           setStatus('success');
           setMessage('Login successful! Redirecting...');
           
-          // Redirect to dashboard
-          setTimeout(() => router.push('/dashboard'), 1500);
+          // Redirect to explore
+          setTimeout(() => router.push('/explore'), 1500);
         } else {
           setStatus('error')
           setMessage('User information not found')
