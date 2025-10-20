@@ -6,12 +6,14 @@ import { Menu, X, Github, Wallet, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { ConnectWalletModal } from './connect-wallet-modal';
 import { useWeb3 } from '@/lib/contexts/Web3Context';
+import { useAuth } from '@/hooks/use-auth';
 
 export function HeaderSimple() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [walletModalOpen, setWalletModalOpen] = useState(false);
   const pathname = usePathname();
   const { account, isConnected, disconnect } = useWeb3();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const navItems = [
     { label: 'HOME', href: '/' },
@@ -32,15 +34,15 @@ export function HeaderSimple() {
       <nav className="container mx-auto px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="md:hidden flex-1" />
-          
+
           <div className="hidden md:flex items-center space-x-16 flex-1 justify-center">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`text-black font-bold text-lg tracking-wide transition-all relative ${
-                  isActive(item.href) 
-                    ? 'after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-[3px] after:bg-black' 
+                  isActive(item.href)
+                    ? 'after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-[3px] after:bg-black'
                     : 'hover:opacity-60'
                 }`}
               >
@@ -77,15 +79,48 @@ export function HeaderSimple() {
               </div>
             )}
 
-            {process.env.NEXT_PUBLIC_SUPABASE_URL && 
+            {process.env.NEXT_PUBLIC_SUPABASE_URL &&
              !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') && (
-              <a
-                href="/api/auth/github"
-                className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(220,220,220,0.5)] transition-all duration-200 font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px]"
-              >
-                <Github className="w-5 h-5" />
-                <span>Start with GitHub</span>
-              </a>
+              <>
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-3">
+                    {user?.user?.user_metadata?.avatar_url && (
+                      <div className="relative group">
+                        <img
+                          src={user.user.user_metadata.avatar_url}
+                          alt="用户头像"
+                          className="w-10 h-10 rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                        />
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                          <div className="text-center">
+                            <div className="font-medium">
+                              {user.user.user_metadata?.user_name || user.user.user_metadata?.preferred_username || '用户'}
+                            </div>
+                            <div className="text-xs opacity-75 mt-1">
+                              {user.user.email}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      onClick={logout}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-black rounded-[39px] bg-red-400 hover:bg-red-500 transition-all duration-200 font-bold text-white text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <a
+                    href="/api/auth/github"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] hover:bg-[rgba(220,220,220,0.5)] transition-all duration-200 font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-1px] hover:translate-y-[-1px]"
+                  >
+                    <Github className="w-5 h-5" />
+                    <span>Start with GitHub</span>
+                  </a>
+                )}
+              </>
             )}
           </div>
 
@@ -146,16 +181,52 @@ export function HeaderSimple() {
                 </button>
               </div>
             )}
-            {process.env.NEXT_PUBLIC_SUPABASE_URL && 
+            {process.env.NEXT_PUBLIC_SUPABASE_URL &&
              !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder') && (
-              <a
-                href="/api/auth/github"
-                className="flex items-center justify-center gap-2 w-full px-6 py-3 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px]"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Github className="w-5 h-5" />
-                <span>Start with GitHub</span>
-              </a>
+              <>
+                {isAuthenticated ? (
+                  <div className="flex items-center gap-3">
+                    {user?.user?.user_metadata?.avatar_url && (
+                      <div className="relative group">
+                        <img
+                          src={user.user.user_metadata.avatar_url}
+                          alt="用户头像"
+                          className="w-10 h-10 rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] cursor-pointer"
+                        />
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                          <div className="text-center">
+                            <div className="font-medium">
+                              {user.user.user_metadata?.user_name || user.user.user_metadata?.preferred_username || '用户'}
+                            </div>
+                            <div className="text-xs opacity-75 mt-1">
+                              {user.user.email}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center justify-center gap-2 w-full px-6 py-3 border-2 border-black rounded-[39px] bg-red-400 font-bold text-white text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px]"
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <a
+                    href="/api/auth/github"
+                    className="flex items-center justify-center gap-2 w-full px-6 py-3 border-2 border-black rounded-[39px] bg-[rgba(220,220,220,0.3)] font-bold text-black text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px]"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Github className="w-5 h-5" />
+                    <span>Start with GitHub</span>
+                  </a>
+                )}
+              </>
             )}
           </div>
         )}

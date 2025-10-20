@@ -1,24 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
-import { authApi } from '@/lib/api';
+import { AuthService } from '@/lib/services/auth.service';
 
 export function useAuth() {
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['user'],
-    queryFn: authApi.getProfile,
+    queryFn: AuthService.getUser,
     retry: false,
   });
 
   const isAuthenticated = !!user;
 
   const login = () => {
-    authApi.githubLogin();
+    AuthService.signInWithGitHub();
   };
 
   const logout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
+    AuthService.signOut().then(() => {
       window.location.href = '/';
-    }
+    });
   };
 
   return {
