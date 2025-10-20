@@ -2,6 +2,9 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowRight, Wallet } from 'lucide-react';
+import { useWeb3 } from '@/lib/contexts/Web3Context';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface ConnectWalletModalProps {
   isOpen: boolean;
@@ -9,27 +12,54 @@ interface ConnectWalletModalProps {
 }
 
 export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps) {
+  const { connect, account, chainId, switchNetwork, isConnected } = useWeb3();
+  const [connecting, setConnecting] = useState(false);
+  
+  const targetChainId = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '11155111');
+
   const wallets = [
     {
       name: 'MetaMask',
       icon: '🦊',
       color: '#F6851B',
+      available: typeof window !== 'undefined' && window.ethereum,
     },
     {
       name: 'Phantom',
       icon: '👻',
       color: '#AB9FF2',
+      available: false, // 暂不支持
     },
     {
       name: 'Coinbase Wallet',
       icon: '🔵',
       color: '#0052FF',
+      available: false, // 暂不支持
     },
   ];
 
-  const handleWalletClick = (walletName: string) => {
-    console.log(`Connecting to ${walletName}...`);
-    onClose();
+  const handleWalletClick = async (walletName: string) => {
+    if (walletName !== 'MetaMask') {
+      toast.error('This wallet is not supported, please use MetaMask');
+      return;
+    }
+
+    setConnecting(true);
+    try {
+      await connect();
+      
+      // 连接后检查网络
+      if (chainId && chainId !== targetChainId) {
+        await switchNetwork(targetChainId);
+      }
+      
+      onClose();
+    } catch (error: any) {
+      console.error('Connect error:', error);
+      toast.error(error.message || 'Connection failed');
+    } finally {
+      setConnecting(false);
+    }
   };
 
   return (
@@ -82,16 +112,30 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
                   <button
                     key={wallet.name}
                     onClick={() => handleWalletClick(wallet.name)}
-                    className="w-full px-6 py-4 bg-white border-[3px] border-black rounded-2xl font-bold text-lg flex items-center justify-between hover:bg-gray-50 transition-colors group"
+                    disabled={!wallet.available || connecting}
+                    className={`w-full px-6 py-4 bg-white border-[3px] border-black rounded-2xl font-bold text-lg flex items-center justify-between transition-colors group ${
+                      wallet.available && !connecting
+                        ? 'hover:bg-gray-50 cursor-pointer'
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
                     style={{
-                      boxShadow: '3px 3px 0px 0px rgba(0,0,0,0.8)',
+                      boxShadow: wallet.available ? '3px 3px 0px 0px rgba(0,0,0,0.8)' : 'none',
                     }}
                   >
                     <div className="flex items-center gap-4">
                       <div className="text-3xl">{wallet.icon}</div>
-                      <span className="text-black">{wallet.name}</span>
+                      <span className="text-black">
+                        {wallet.name}
+                        {!wallet.available && wallet.name === 'MetaMask' && ' (未安装)'}
+                        {!wallet.available && wallet.name !== 'MetaMask' && ' (即将支持)'}
+                      </span>
                     </div>
-                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-black group-hover:translate-x-1 transition-all" />
+                    {wallet.available && !connecting && (
+                      <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-black group-hover:translate-x-1 transition-all" />
+                    )}
+                    {connecting && wallet.name === 'MetaMask' && (
+                      <div className="w-5 h-5 border-2 border-gray-400 border-t-black rounded-full animate-spin" />
+                    )}
                   </button>
                 ))}
               </div>
