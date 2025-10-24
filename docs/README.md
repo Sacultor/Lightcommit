@@ -1,5 +1,16 @@
 ### LightCommit 项目说明
 
+#### 文档索引
+
+- `docs/overview.md` 概览与架构
+- `docs/setup.md` 环境配置与快速开始
+- `docs/frontend.md` 前端结构与约定
+- `docs/api.md` API 规范
+- `docs/database.md` 数据库与迁移
+- `docs/contracts.md` 合约与链上交互
+- `docs/deployment.md` 部署与运维
+- `docs/contributing.md` 贡献指南
+
 #### 项目概述
 
 - **名称**: LightCommit
@@ -120,6 +131,31 @@ flowchart LR
     CommitNFT
   end
 ```
+
+#### 路线图与影响（Roadmap & Impact）
+
+- Phase 1：MVP（2025 Q4）
+  - 目标：验证核心假设，获取 1000 早期用户
+  - 交付：GitHub OAuth、Polygon 测试网部署、基础铸造、Web 界面、反女巫 v1
+  - 指标：注册开发者 1,000+；NFT 铸造 5,000+；女巫检出率 >80%
+
+- Phase 2：Beta（2026 Q1-Q2）
+  - 目标：完善核心功能，启动 DAO 治理
+  - 交付：zk 证明、DAO 金库自动分配、Issue 悬赏、移动端、反女巫 v2、主网部署
+  - 指标：注册开发者 10,000+；月活跃铸造 20,000+；DAO 金库余额 $50,000+
+
+- Phase 3：全面发布（2026 Q3-Q4）
+  - 目标：跨链扩展，生态整合
+  - 交付：Base/Arbitrum 部署、跨链声誉聚合、Lens 集成、企业 API、分析仪表盘、$LIGHT（如通过）
+  - 指标：注册开发者 50,000+；月铸造量 100,000+；DAO 金库 $500,000+；企业客户 10+
+
+- Phase 4：未来愿景（2027+）
+  - 方向：AI 辅助验证、链下贡献支持（GitLab/Bitbucket/非代码）、DeFi 整合、全球化与合规
+
+- 预期影响
+  - 更及时激励：从季度资助缩短至实时-每周
+  - 更可靠证明：链上不可篡改凭证 + 可选 zk 隐私
+  - 更可持续经济：协议费用自循环驱动长期激励
 
 #### 团队与联系信息
 
