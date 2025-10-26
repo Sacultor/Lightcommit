@@ -4,7 +4,7 @@ const { config } = require('dotenv');
 const path = require('path');
 
 // 加载环境变量
-config({ path: path.join(__dirname, '../.env.local') });
+config({ path: path.join(__dirname, '../.env') });
 
 async function testNewAuth() {
   console.log('🧪 测试新的 Supabase 认证配置...\n');

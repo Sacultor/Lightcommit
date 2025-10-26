@@ -1,4 +1,5 @@
 import { getSupabaseService, getSupabaseDB } from './supabase';
+import { serviceSupabase } from '../supabase/service';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
@@ -99,7 +100,8 @@ export const healthCheck = async (): Promise<boolean> => {
  * 获取 Supabase 数据库客户端
  */
 export const getDatabaseClient = () => {
-  return getSupabaseDB();
+  // Return server-side client by default for write operations
+  return serviceSupabase;
 };
 
 /**

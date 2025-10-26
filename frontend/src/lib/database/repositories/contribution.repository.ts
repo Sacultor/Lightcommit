@@ -24,6 +24,20 @@ interface DbContributionStats {
 }
 
 export class ContributionRepository {
+  // 通用查询（基于 Supabase 客户端）
+  static async findMany(params: { status?: string; eligibility?: string; whereScoreNull?: boolean; limit?: number } = {}) {
+    const supabase = getDatabaseClient();
+    let q = supabase.from('contributions').select('*');
+
+    if (params.status) q = q.eq('status', params.status);
+    if (params.eligibility) q = q.eq('eligibility', params.eligibility);
+    if (params.whereScoreNull) q = q.is('score', null);
+    if (params.limit) q = q.limit(params.limit);
+
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data || []).map(this.mapRowToContribution);
+  }
   // 根据 ID 查找贡献
   static async findById(id: string): Promise<Contribution | null> {
     const result = await query(
@@ -150,6 +164,10 @@ export class ContributionRepository {
     if (contributionData.tokenId !== undefined) updateData.tokenId = contributionData.tokenId;
     if (contributionData.metadataUri !== undefined) updateData.metadataUri = contributionData.metadataUri;
     if (contributionData.metadata !== undefined) updateData.metadata = contributionData.metadata;
+    if ((contributionData as any).score !== undefined) (updateData as any).score = (contributionData as any).score;
+    if ((contributionData as any).scoreBreakdown !== undefined) (updateData as any).scoreBreakdown = (contributionData as any).scoreBreakdown;
+    if ((contributionData as any).eligibility !== undefined) (updateData as any).eligibility = (contributionData as any).eligibility;
+    if ((contributionData as any).aiVersion !== undefined) (updateData as any).aiVersion = (contributionData as any).aiVersion;
 
     if (Object.keys(updateData).length === 0) {
       return this.findById(id);
@@ -215,35 +233,48 @@ export class ContributionRepository {
 
   // 将数据库行映射为 Contribution 对象
   private static mapRowToContribution(row: any): Contribution {
+    // 兼容 snake_case 与 camelCase 两种风格
+    const get = (a: any, ...keys: string[]) => keys.reduce((v, k) => (v !== undefined ? v : (row as any)[k]), undefined);
+
+    const metadataRaw = get(row, 'metadata', 'metadata');
+    const metadata = typeof metadataRaw === 'string' ? JSON.parse(metadataRaw) : (metadataRaw || {});
+
     return {
-      id: row.id,
-      githubId: row.github_id,
-      type: row.type as ContributionType,
-      user: row.username ? {
-        id: row.user_id,
-        githubId: row.user_github_id || '',
-        username: row.username,
-        avatarUrl: row.avatar_url,
+      id: get(row, 'id') as string,
+      githubId: (get(row, 'github_id', 'githubId') as string) || '',
+      type: get(row, 'type') as ContributionType,
+      user: get(row, 'username') ? {
+        id: (get(row, 'user_id', 'userId') as string) || '',
+        githubId: (get(row, 'user_github_id', 'userGithubId') as string) || '',
+        username: get(row, 'username') as string,
+        avatarUrl: (get(row, 'avatar_url', 'avatarUrl') as string) || undefined,
       } : undefined,
-      userId: row.user_id,
-      repository: row.repo_name ? {
-        id: row.repository_id,
-        githubId: row.repository_github_id || '',
-        name: row.repo_name,
-        fullName: row.repo_full_name,
+      userId: (get(row, 'user_id', 'userId') as string) || '',
+      repository: get(row, 'repo_name') ? {
+        id: (get(row, 'repository_id', 'repositoryId') as string) || '',
+        githubId: (get(row, 'repository_github_id', 'repositoryGithubId') as string) || '',
+        name: get(row, 'repo_name') as string,
+        fullName: (get(row, 'repo_full_name', 'repoFullName') as string) || '',
+        description: (get(row, 'repo_description') as string) || undefined,
+        url: (get(row, 'repo_url') as string) || undefined,
       } : undefined,
-      repositoryId: row.repository_id,
-      contributor: row.contributor,
-      title: row.title,
-      description: row.description,
-      url: row.url,
-      status: row.status as ContributionStatus,
-      transactionHash: row.transaction_hash,
-      tokenId: row.token_id,
-      metadataUri: row.metadata_uri,
-      metadata: row.metadata ? JSON.parse(row.metadata) : {},
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      repositoryId: (get(row, 'repository_id', 'repositoryId') as string) || '',
+      contributor: (get(row, 'contributor') as string) || '',
+      title: (get(row, 'title') as string) || undefined,
+      description: (get(row, 'description') as string) || undefined,
+      url: (get(row, 'url') as string) || undefined,
+      status: get(row, 'status') as ContributionStatus,
+      transactionHash: (get(row, 'transaction_hash', 'transactionHash') as string) || undefined,
+      tokenId: (get(row, 'token_id', 'tokenId') as string) || undefined,
+      metadataUri: (get(row, 'metadata_uri', 'metadataUri') as string) || undefined,
+      metadata,
+      // scoring fields
+      score: (get(row, 'score') as number) || undefined,
+      scoreBreakdown: (get(row, 'scoreBreakdown') as any) || undefined,
+      eligibility: (get(row, 'eligibility') as string) || undefined,
+      aiVersion: (get(row, 'aiVersion') as string) || undefined,
+      createdAt: (get(row, 'created_at', 'createdAt') as Date) as any,
+      updatedAt: (get(row, 'updated_at', 'updatedAt') as Date) as any,
     };
   }
 }

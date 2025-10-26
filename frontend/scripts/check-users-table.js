@@ -4,7 +4,7 @@ const { config } = require('dotenv');
 const path = require('path');
 
 // 加载环境变量
-config({ path: path.join(__dirname, '../.env.local') });
+config({ path: path.join(__dirname, '../.env') });
 
 async function checkUsersTable() {
   console.log('🔍 检查 users 表状态...\n');

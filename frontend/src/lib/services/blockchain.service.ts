@@ -1,6 +1,8 @@
 // Note: ethers will need to be installed as a dependency
 // import { ethers } from 'ethers';
 import { getConfig } from '@/lib/config';
+import { ethers } from 'ethers';
+import CommitNFT from '@/lib/contracts/CommitNFT.json';
 import { ContributionRepository } from '@/lib/database/repositories/contribution.repository';
 import { Contribution, ContributionStatus } from '@/types/contribution';
 import {
@@ -27,20 +29,20 @@ export class BlockchainService {
       }
 
       // 初始化提供者
-      // this.provider = new ethers.JsonRpcProvider(config.blockchain.rpcUrl);
+      this.provider = new ethers.JsonRpcProvider(config.blockchain.rpcUrl);
 
       // 初始化钱包
       if (config.blockchain.privateKey) {
-        // this.wallet = new ethers.Wallet(config.blockchain.privateKey, this.provider);
+        this.wallet = new ethers.Wallet(config.blockchain.privateKey, this.provider);
       }
 
       // 初始化合约
       if (config.blockchain.contractAddress) {
-        // this.contract = new ethers.Contract(
-        //   config.blockchain.contractAddress,
-        //   contractAbi, // ABI would need to be imported separately
-        //   this.wallet || this.provider
-        // );
+        this.contract = new ethers.Contract(
+          config.blockchain.contractAddress,
+          (CommitNFT as any).abi,
+          this.wallet || this.provider,
+        );
       }
 
       console.log('Blockchain initialized successfully');
@@ -84,12 +86,35 @@ export class BlockchainService {
         throw new Error('Contract not initialized');
       }
 
-      const tx = await (this.contract.mintContribution as any)(
-        contribution.contributor,
+      // 组装 CommitData（合约需求）
+      const repoFullName = contribution.repository?.fullName || (contribution.metadata as any)?.repo || '';
+      const commitHash = (contribution.metadata as any)?.sha || contribution.githubId;
+      const linesAdded = (contribution.metadata as any)?.additions || 0;
+      const linesDeleted = (contribution.metadata as any)?.deletions || 0;
+      const merged = contribution.type === 'pull_request' ? true : !!(contribution.metadata as any)?.merged;
+      const testsPass = !!(contribution.metadata as any)?.testsPass;
+      const timestampSec = Math.floor(new Date(contribution.createdAt as any).getTime() / 1000);
+      const author = contribution.contributor;
+      const message = contribution.title || contribution.description || '';
+
+      const commitData = {
+        repo: repoFullName,
+        commit: commitHash,
+        linesAdded,
+        linesDeleted,
+        testsPass,
+        timestamp: timestampSec,
+        author,
+        message,
+        merged,
+      };
+
+      const toAddress = this.wallet?.address || author;
+
+      const tx = await (this.contract as any).mintCommit(
+        toAddress,
+        commitData,
         metadataUri,
-        {
-          gasLimit: 500000,
-        },
       );
 
       console.log('Minting transaction sent:', tx.hash);
@@ -98,13 +123,30 @@ export class BlockchainService {
       const receipt = await tx.wait();
       console.log('Minting transaction confirmed:', receipt.hash);
 
+      // 从事件中解析 tokenId
+      let tokenId: string | undefined;
+      try {
+        const event = receipt.logs.find((log: any) => {
+          try {
+            const parsed = (this.contract as any).interface.parseLog(log);
+            return parsed?.name === 'CommitMinted';
+          } catch {
+            return false;
+          }
+        });
+        if (event) {
+          const parsed = (this.contract as any).interface.parseLog(event);
+          tokenId = parsed?.args?.tokenId?.toString();
+        }
+      } catch {}
+
       // 更新贡献状态
       await ContributionRepository.update(contributionId, {
         status: ContributionStatus.MINTED,
         transactionHash: receipt.hash,
-        tokenId: receipt.logs[0]?.topics[3], // 假设 tokenId 在第一个 log 的第三个 topic
+        tokenId,
         metadataUri,
-      });
+      } as any);
 
       return receipt.hash;
     } catch (error) {
@@ -118,14 +160,10 @@ export class BlockchainService {
     try {
       const config = getConfig();
 
-      if (!config.ipfs.apiUrl) {
-        throw new Error('IPFS API URL not configured');
-      }
-
       const metadata = {
         name: `Contribution #${contribution.id}`,
         description: contribution.description || `Contribution by ${contribution.contributor}`,
-        image: '', // Avatar URL would need to be fetched from user data
+        image: '',
         attributes: [
           {
             trait_type: 'Type',
@@ -156,23 +194,41 @@ export class BlockchainService {
         },
       };
 
-      // 上传到 IPFS
-      const response = await fetch(`${config.ipfs.apiUrl}/api/v0/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(metadata),
-      });
-
-      if (!response.ok) {
-        throw new Error(`IPFS upload failed: ${response.statusText}`);
+      // 使用 Web3.Storage（推荐）或 Pinata
+      if (process.env.WEB3_STORAGE_TOKEN) {
+        const body = JSON.stringify(metadata);
+        const res = await fetch('https://api.web3.storage/upload', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${process.env.WEB3_STORAGE_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body,
+        });
+        if (!res.ok) throw new Error(`Web3.Storage upload failed: ${res.statusText}`);
+        const json = await res.json();
+        const cid = json.cid || json['cid'];
+        return `ipfs://${cid}`;
       }
 
-      const result = await response.json();
-      const ipfsHash = result.Hash;
+      // 退化为 Pinata JSON pin（需配置）
+      if (config.ipfs.apiUrl && config.ipfs.apiKey) {
+        const res = await fetch(`${config.ipfs.apiUrl}/pinJSONToIPFS`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            pinata_api_key: config.ipfs.apiKey,
+            pinata_secret_api_key: config.ipfs.secretKey || '',
+          } as any,
+          body: JSON.stringify({ pinataContent: metadata }),
+        });
+        if (!res.ok) throw new Error(`Pinata upload failed: ${res.statusText}`);
+        const json = await res.json();
+        const ipfsHash = json.IpfsHash;
+        return `ipfs://${ipfsHash}`;
+      }
 
-      return `ipfs://${ipfsHash}`;
+      throw new Error('No IPFS/Web3.Storage configuration provided');
     } catch (error) {
       console.error('Failed to upload metadata to IPFS:', error);
       throw error;

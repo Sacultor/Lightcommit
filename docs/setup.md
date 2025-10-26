@@ -17,7 +17,7 @@ pnpm --filter hardhat install
 
 ### 配置环境变量
 
-在 `frontend` 目录创建 `.env.local`，示例参考 `frontend/ENV_SETUP.md`。
+在 `frontend` 目录创建 `.env`，示例参考 `frontend/ENV_SETUP.md`。
 
 ```bash
 NEXT_PUBLIC_CONTRACT_ADDRESS=0x5FbDB2315678afecb367f032d93F642f64180aa3

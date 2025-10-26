@@ -9,7 +9,7 @@ const path = require('path');
 const { config } = require('dotenv');
 
 // 加载环境变量
-config({ path: path.join(__dirname, '../.env.local') });
+config({ path: path.join(__dirname, '../.env') });
 
 async function checkDatabaseStatus() {
   console.log('🔍 Supabase 数据库状态检查\n');
