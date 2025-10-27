@@ -26,7 +26,17 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取请求体
-    const payload = await request.json();
+    let payload;
+    try {
+      payload = await request.json();
+    } catch (error) {
+      console.error('❌ Failed to parse request body:', error);
+      return NextResponse.json(
+        { error: 'Invalid request body' },
+        { status: 400 }
+      );
+    }
+
     const payloadString = JSON.stringify(payload);
 
     // 验证 webhook 签名

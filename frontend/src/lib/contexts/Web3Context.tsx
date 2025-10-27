@@ -120,6 +120,12 @@ export function Web3Provider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // 检查是否已经连接
+      if (account) {
+        console.log('Already connected to wallet');
+        return;
+      }
+
       const provider = new ethers.BrowserProvider(window.ethereum);
 
       // 请求账户访问

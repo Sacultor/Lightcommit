@@ -169,9 +169,6 @@ importers:
       dotenv:
         specifier: ^16.5.0
         version: 16.6.1
-      erc721a:
-        specifier: ^4.3.0
-        version: 4.3.0
       ethers:
         specifier: ^6.15.0
         version: 6.15.0
@@ -3029,9 +3026,6 @@ packages:
   env-paths@2.2.1:
     resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
     engines: {node: '>=6'}
-
-  erc721a@4.3.0:
-    resolution: {integrity: sha512-JneTLVEH5I/rJMArAwwJ26CX4HvL3ql9Q3egpQ4QB7sz7vIGZbMdMmqHLBIIKhBlfToZKewtC7OZtdr3qU6jsA==}
 
   es-abstract@1.24.0:
     resolution: {integrity: sha512-WSzPgsdLtTcQwm4CROfS5ju2Wa1QQcVeT37jFjYzdFz1r9ahadC8B8/a4qxJxM+09F18iumCdRmlr96ZYkQvEg==}
@@ -8985,8 +8979,6 @@ snapshots:
       strip-ansi: 6.0.1
 
   env-paths@2.2.1: {}
-
-  erc721a@4.3.0: {}
 
   es-abstract@1.24.0:
     dependencies:

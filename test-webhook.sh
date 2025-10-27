@@ -4,7 +4,7 @@ echo "🔍 Webhook 调试测试"
 echo "===================="
 echo ""
 
-cd /Users/frederick/Lightcommit/frontend
+cd /web3/Lightcommit/frontend
 
 # 1. 检查环境变量
 echo "1️⃣ 检查环境变量..."

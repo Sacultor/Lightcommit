@@ -44,9 +44,20 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       return;
     }
 
+    if (connecting) {
+      console.log('Connection in progress...');
+      return;
+    }
+
     setConnecting(true);
     try {
-      await connect();
+      await connect().catch((error) => {
+        if (error.code === -32002) {
+          toast.error('请检查MetaMask弹窗并确认连接');
+          return;
+        }
+        throw error;
+      });
 
       // 连接后检查网络
       if (chainId && chainId !== targetChainId) {
