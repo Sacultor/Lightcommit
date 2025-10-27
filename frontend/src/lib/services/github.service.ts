@@ -44,6 +44,10 @@ export class GitHubService {
         Buffer.from(signature.trim()),
         Buffer.from(digest.trim())
       );
+    } catch (error) {
+      console.error('Signature verification failed:', error);
+      return false;
+    }
   }
 
   // 处理 webhook 事件
