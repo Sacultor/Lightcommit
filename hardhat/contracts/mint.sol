@@ -21,6 +21,9 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
     
     // 最大供应量限制
     uint256 public constant MAX_SUPPLY = 1000000;
+
+    // 单个地址最大铸造数量，帮助缓解女巫攻击（可根据需求调整）
+    uint256 public constant MAX_MINTS_PER_ADDRESS = 1000;
     
     // 基础URI，用于构建tokenURI
     string private _baseTokenURI;
@@ -61,7 +64,7 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
     event BatchMinted(
         address indexed to,
         uint256[] tokenIds,
-        uint256 totalGasUsed
+        uint256 gasLeft
     );
     
     event BaseURIUpdated(string newBaseURI);
@@ -87,10 +90,15 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
         address to,
         CommitData memory commitData,
         string memory metadataURI
-    ) external whenNotPaused nonReentrant {
+    ) external onlyOwner whenNotPaused nonReentrant {
         require(to != address(0), "Invalid recipient address");
         require(!_mintedCommits[commitData.commit], "Commit already minted");
         require(_tokenIdCounter.current() <= MAX_SUPPLY, "Max supply exceeded");
+        // 输入校验：commit 与 metadataURI 不可为空，限制长度以防恶意大字符串
+        require(bytes(commitData.commit).length > 0, "Commit hash required");
+        require(bytes(commitData.commit).length <= 256, "Commit hash too long");
+        require(bytes(metadataURI).length > 0, "metadataURI required");
+        require(_userTokenCount[to] + 1 <= MAX_MINTS_PER_ADDRESS, "Recipient mint limit exceeded");
         
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
@@ -125,17 +133,23 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
         address to,
         CommitData[] memory commitsData,
         string[] memory metadataURIs
-    ) external whenNotPaused nonReentrant {
+    ) external onlyOwner whenNotPaused nonReentrant {
         require(to != address(0), "Invalid recipient address");
         require(commitsData.length == metadataURIs.length, "Arrays length mismatch");
-        require(commitsData.length > 0, "Empty array");
         require(commitsData.length <= 50, "Batch size too large"); // 限制批量大小
         
         uint256[] memory tokenIds = new uint256[](commitsData.length);
+
+    // 简单输入校验
+    require(commitsData.length > 0, "Empty array");
+    require(_userTokenCount[to] + commitsData.length <= MAX_MINTS_PER_ADDRESS, "Recipient mint limit exceeded");
         
         for (uint256 i = 0; i < commitsData.length; i++) {
             require(!_mintedCommits[commitsData[i].commit], "Commit already minted");
             require(_tokenIdCounter.current() <= MAX_SUPPLY, "Max supply exceeded");
+            require(bytes(commitsData[i].commit).length > 0, "Commit hash required");
+            require(bytes(commitsData[i].commit).length <= 256, "Commit hash too long");
+            require(bytes(metadataURIs[i]).length > 0, "metadataURI required");
             
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
@@ -233,8 +247,11 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
     /**
      * @dev 紧急提取ETH（仅限owner）
      */
-    function emergencyWithdraw() external onlyOwner {
-        payable(owner()).transfer(address(this).balance);
+    function emergencyWithdraw() external onlyOwner nonReentrant {
+        // 使用 call 更稳健地转账并防止因接收合约需要更多 gas 而失败
+        uint256 bal = address(this).balance;
+        (bool ok, ) = payable(owner()).call{value: bal}("");
+        require(ok, "Withdraw failed");
     }
     
     // 重写必要的函数以支持ERC721URIStorage
