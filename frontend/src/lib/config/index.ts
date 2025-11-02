@@ -29,6 +29,16 @@ export interface BlockchainConfig {
   rpcUrl?: string;
   privateKey?: string;
   contractAddress?: string;
+  chainId: number;
+  identityRegistry: string;
+  reputationRegistry: string;
+  validationRegistry: string;
+  commitNFT: string;
+}
+
+export interface RpcConfig {
+  url: string;
+  chainId: number;
 }
 
 export interface IpfsConfig {
@@ -50,6 +60,7 @@ export interface AppConfig {
   github: GitHubConfig;
   jwt: JwtConfig;
   blockchain: BlockchainConfig;
+  rpc: RpcConfig;
   ipfs: IpfsConfig;
   supabase: SupabaseConfig;
 }
@@ -89,6 +100,16 @@ export const getConfig = (): AppConfig => ({
     rpcUrl: process.env.SEPOLIA_RPC_URL,
     privateKey: process.env.SEPOLIA_PRIVATE_KEY,
     contractAddress: process.env.CONTRACT_ADDRESS,
+    chainId: parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '11155111', 10),
+    identityRegistry: process.env.NEXT_PUBLIC_IDENTITY_REGISTRY_ADDRESS || '',
+    reputationRegistry: process.env.NEXT_PUBLIC_REPUTATION_REGISTRY_ADDRESS || '',
+    validationRegistry: process.env.NEXT_PUBLIC_VALIDATION_REGISTRY_ADDRESS || '',
+    commitNFT: process.env.NEXT_PUBLIC_COMMIT_NFT_ADDRESS || '',
+  },
+
+  rpc: {
+    url: process.env.NEXT_PUBLIC_RPC_URL || 'http://localhost:8545',
+    chainId: parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '31337', 10),
   },
 
   ipfs: {

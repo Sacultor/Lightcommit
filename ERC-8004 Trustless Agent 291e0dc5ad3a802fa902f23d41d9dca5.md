@@ -1,3 +1,11 @@
+# ERC-8004 Trustless Agent
+
+状态: 新
+
+[https://www.notion.so](https://www.notion.so)
+
+[https://www.notion.so](https://www.notion.so)
+
 ## 1. 核心愿景与目标
 
 1.1. **核心愿景**：构建一个去中心化的、由AI驱动的自动化系统，用于客观评估GitHub上的每一次Commit（代码提交）质量，并将高质量的贡献转化为可验证、不可篡改的链上声誉（SBTs/NFTs），最终通过DAO实现对开发者的精准、自动化激励。
