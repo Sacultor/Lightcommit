@@ -9,7 +9,7 @@ const path = require('path');
 const { config } = require('dotenv');
 
 // 加载环境变量
-config({ path: path.join(__dirname, '../.env.local') });
+config({ path: path.join(__dirname, '../.env') });
 
 async function verifyDatabaseConfig() {
   console.log('🔍 开始验证数据库配置...\n');
@@ -152,7 +152,7 @@ async function verifyDatabaseConfig() {
     console.log('');
     console.log('💡 配置指南:');
     console.log('   1. 在 Supabase Dashboard 中获取项目 URL 和 API Key');
-    console.log('   2. 创建 .env.local 文件并添加以下配置:');
+    console.log('   2. 创建 .env 文件并添加以下配置:');
     console.log('      SUPABASE_URL=your_project_url');
     console.log('      SUPABASE_ANON_KEY=your_anon_key');
     console.log('');

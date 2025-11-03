@@ -1,8 +1,8 @@
 # 环境变量配置说明
 
-## 🔧 创建 .env.local 文件
+## 🔧 创建 .env 文件
 
-在 `frontend` 目录下创建 `.env.local` 文件，并添加以下内容：
+在 `frontend` 目录下创建 `.env` 文件，并添加以下内容：
 
 ```bash
 # ===== 区块链配置 (本地测试网) =====
@@ -50,11 +50,11 @@ GITHUB_CLIENT_SECRET=your_github_client_secret_here
    npx hardhat node
    ```
 
-2. **创建 .env.local 文件**
+2. **创建 .env 文件**
    ```bash
    cd frontend
-   cp ENV_SETUP.md .env.local
-   # 编辑 .env.local 填写实际配置
+   cp ENV_SETUP.md .env
+   # 编辑 .env 填写实际配置
    ```
 
 3. **启动前端服务**
@@ -108,7 +108,7 @@ Hardhat 提供了预配置的测试账户，私钥为：
    npx hardhat run scripts/deploy-commit-nft.ts --network sepolia
    ```
 
-2. **更新 .env.local**
+2. **更新 .env**
    ```bash
    NEXT_PUBLIC_CONTRACT_ADDRESS=<新的合约地址>
    NEXT_PUBLIC_CHAIN_ID=11155111

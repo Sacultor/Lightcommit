@@ -16,13 +16,13 @@ export function CollectionContainer({ children, className = '' }: CollectionCont
       transition={{ duration: 0.6, delay: 0.2 }}
       className={`relative max-w-7xl mx-auto mt-12 ${className}`}
     >
-      <div 
+      <div
         className="relative bg-[#E8DCC8] rounded-[40px] p-8 md:p-12 border-8 border-black"
         style={{
           boxShadow: '12px 12px 0px 0px rgba(0,0,0,0.3)',
         }}
       >
-        <div 
+        <div
           className="absolute -top-4 -left-4 w-32 h-32 opacity-50"
           style={{
             background: 'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)',
@@ -30,7 +30,7 @@ export function CollectionContainer({ children, className = '' }: CollectionCont
             filter: 'blur(20px)',
           }}
         />
-        <div 
+        <div
           className="absolute -top-4 -right-4 w-40 h-40 opacity-40"
           style={{
             background: 'linear-gradient(135deg, #A259FF 0%, #7B2CBF 100%)',
@@ -38,8 +38,8 @@ export function CollectionContainer({ children, className = '' }: CollectionCont
             filter: 'blur(25px)',
           }}
         />
-        
-        <div 
+
+        <div
           className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-1/2 h-8 bg-black/20 rounded-full"
           style={{ filter: 'blur(8px)' }}
         />
@@ -49,7 +49,7 @@ export function CollectionContainer({ children, className = '' }: CollectionCont
         </div>
       </div>
 
-      <svg 
+      <svg
         className="absolute -top-6 -left-8 w-24 h-24 opacity-80 pointer-events-none"
         viewBox="0 0 100 100"
         style={{ transform: 'rotate(-15deg)' }}
@@ -63,7 +63,7 @@ export function CollectionContainer({ children, className = '' }: CollectionCont
         />
       </svg>
 
-      <svg 
+      <svg
         className="absolute -bottom-6 -right-8 w-32 h-32 opacity-80 pointer-events-none"
         viewBox="0 0 100 100"
         style={{ transform: 'rotate(25deg)' }}

@@ -68,7 +68,7 @@ export class RepositoryRepository {
   // 更新仓库
   static async update(id: string, repositoryData: UpdateRepositoryData): Promise<Repository | null> {
     const supabase = getDatabaseClient();
-    
+
     const updateData: any = {};
     if (repositoryData.name !== undefined) updateData.name = repositoryData.name;
     if (repositoryData.fullName !== undefined) updateData.fullName = repositoryData.fullName;

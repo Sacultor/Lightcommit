@@ -12,9 +12,9 @@ interface ConnectWalletModalProps {
 }
 
 export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps) {
-  const { connect, account, chainId, switchNetwork, isConnected } = useWeb3();
+  const { connect, chainId, switchNetwork } = useWeb3();
   const [connecting, setConnecting] = useState(false);
-  
+
   const targetChainId = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '11155111');
 
   const wallets = [
@@ -44,15 +44,26 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
       return;
     }
 
+    if (connecting) {
+      console.log('Connection in progress...');
+      return;
+    }
+
     setConnecting(true);
     try {
-      await connect();
-      
+      await connect().catch((error) => {
+        if (error.code === -32002) {
+          toast.error('请检查MetaMask弹窗并确认连接');
+          return;
+        }
+        throw error;
+      });
+
       // 连接后检查网络
       if (chainId && chainId !== targetChainId) {
         await switchNetwork(targetChainId);
       }
-      
+
       onClose();
     } catch (error: any) {
       console.error('Connect error:', error);
@@ -73,7 +84,7 @@ export function ConnectWalletModal({ isOpen, onClose }: ConnectWalletModalProps)
             className="fixed inset-0 bg-black/20 z-50"
             onClick={onClose}
           />
-          
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

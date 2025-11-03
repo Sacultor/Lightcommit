@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useWeb3 } from '@/lib/contexts/Web3Context';
 import { useContract } from '@/lib/hooks/useContract';
 import { ContractService } from '@/lib/services/contract.service';
@@ -16,7 +16,7 @@ export default function TestContractPage() {
   const [mintResult, setMintResult] = useState<string>('');
   const [queryTokenId, setQueryTokenId] = useState<string>('');
   const [queryResult, setQueryResult] = useState<any>(null);
-  
+
   // 真实的 commit 数据表单
   const [formData, setFormData] = useState({
     repo: '',
@@ -29,39 +29,39 @@ export default function TestContractPage() {
     merged: false,
   });
 
+  const loadContractInfo = useCallback(async () => {
+    if (!contract) return;
+
+    try {
+      const service = new ContractService(contract);
+      const supply = await service.getTotalSupply();
+      const name = await contract.name();
+      const symbol = await contract.symbol();
+
+      setTotalSupply(supply);
+      setContractName(name);
+      setContractSymbol(symbol);
+
+      toast.success('Contract information loaded successfully');
+    } catch (error) {
+      console.error('Failed to load contract info:', error);
+      toast.error('Failed to load contract information');
+    }
+  }, [contract]);
+
   // 从合约加载真实数据
   useEffect(() => {
     if (contract) {
       loadContractInfo();
     }
-  }, [contract]);
+  }, [contract, loadContractInfo]);
 
   // 自动填充作者为当前账户
   useEffect(() => {
     if (account && !formData.author) {
       setFormData(prev => ({ ...prev, author: account }));
     }
-  }, [account]);
-
-  const loadContractInfo = async () => {
-    if (!contract) return;
-    
-    try {
-      const service = new ContractService(contract);
-      const supply = await service.getTotalSupply();
-      const name = await contract.name();
-      const symbol = await contract.symbol();
-      
-      setTotalSupply(supply);
-      setContractName(name);
-      setContractSymbol(symbol);
-      
-      toast.success('Contract information loaded successfully');
-    } catch (error) {
-      console.error('Failed to load contract info:', error);
-      toast.error('Failed to load contract information');
-    }
-  };
+  }, [account, formData.author]);
 
   // 从链上查询真实的 NFT 数据
   const handleQueryNFT = async () => {
@@ -74,7 +74,7 @@ export default function TestContractPage() {
     try {
       const service = new ContractService(contract);
       const data = await service.getCommitData(parseInt(queryTokenId));
-      
+
       if (data) {
         setQueryResult(data);
         toast.success('Query successful');
@@ -111,10 +111,10 @@ export default function TestContractPage() {
 
     setLoading(true);
     setMintResult('');
-    
+
     try {
       const service = new ContractService(contract);
-      
+
       // 检查是否已铸造
       const isMinted = await service.isCommitMinted(formData.commit);
       if (isMinted) {
@@ -122,7 +122,7 @@ export default function TestContractPage() {
         setLoading(false);
         return;
       }
-      
+
       const commitData = {
         repo: formData.repo,
         commit: formData.commit,
@@ -137,11 +137,11 @@ export default function TestContractPage() {
 
       console.log('🚀 发送真实交易到链上...', commitData);
       toast.loading('Sending transaction to blockchain...', { id: 'minting' });
-      
+
       const result = await service.mintCommit(
         account,
         commitData,
-        `ipfs://metadata/${formData.commit}` // 使用 IPFS 格式
+        `ipfs://metadata/${formData.commit}`, // 使用 IPFS 格式
       );
 
       toast.dismiss('minting');
@@ -149,10 +149,10 @@ export default function TestContractPage() {
       if (result.success) {
         toast.success('✅ NFT minted successfully! Transaction on chain');
         setMintResult(`✅ 铸造成功!\n交易哈希: ${result.transactionHash}\nToken ID: ${result.tokenId}\n\n在 Hardhat 节点日志中可以看到真实的链上交易记录`);
-        
+
         // 重新加载供应量
         await loadContractInfo();
-        
+
         // 清空表单
         setFormData({
           repo: '',
@@ -216,7 +216,7 @@ export default function TestContractPage() {
                 <span className="text-blue-600">{process.env.NEXT_PUBLIC_RPC_URL}</span>
               </div>
             </div>
-            
+
             {!isConnected && (
               <button
                 onClick={connect}
@@ -280,7 +280,7 @@ export default function TestContractPage() {
                 查询
               </button>
             </div>
-            
+
             {queryResult && (
               <div className="p-4 bg-white border-2 border-black rounded-xl font-mono text-xs">
                 <div className="font-bold text-lg mb-2">📦 链上数据:</div>
@@ -305,7 +305,7 @@ export default function TestContractPage() {
             <p className="mb-4 text-sm text-gray-700">
               填写真实的 Git Commit 信息，数据将永久记录在区块链上
             </p>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block font-bold mb-2">仓库名称 *</label>
@@ -317,7 +317,7 @@ export default function TestContractPage() {
                   className="w-full px-4 py-2 border-2 border-black rounded-lg"
                 />
               </div>
-              
+
               <div>
                 <label className="block font-bold mb-2">Commit Hash *</label>
                 <input
@@ -328,7 +328,7 @@ export default function TestContractPage() {
                   className="w-full px-4 py-2 border-2 border-black rounded-lg font-mono"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block font-bold mb-2">添加行数</label>
@@ -351,7 +351,7 @@ export default function TestContractPage() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block font-bold mb-2">作者地址</label>
                 <input
@@ -362,7 +362,7 @@ export default function TestContractPage() {
                   className="w-full px-4 py-2 border-2 border-black rounded-lg font-mono text-sm"
                 />
               </div>
-              
+
               <div>
                 <label className="block font-bold mb-2">Commit 消息 *</label>
                 <textarea
@@ -373,7 +373,7 @@ export default function TestContractPage() {
                   className="w-full px-4 py-2 border-2 border-black rounded-lg"
                 />
               </div>
-              
+
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -384,7 +384,7 @@ export default function TestContractPage() {
                   />
                   <span className="font-bold">测试通过</span>
                 </label>
-                
+
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -430,7 +430,7 @@ export default function TestContractPage() {
                 <li>可以在 Hardhat 节点日志中看到所有交易</li>
                 <li>查询功能直接从合约存储读取数据</li>
               </ul>
-              
+
               <p className="font-bold mt-4">🔍 验证真实性:</p>
               <ul className="list-disc list-inside space-y-1 ml-4">
                 <li>查看终端中的 Hardhat 节点日志</li>

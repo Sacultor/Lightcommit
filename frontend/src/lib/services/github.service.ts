@@ -21,26 +21,57 @@ import * as crypto from 'crypto';
 export class GitHubService {
   // 验证 webhook 签名
   static verifyWebhookSignature(payload: string, signature: string): boolean {
-    const config = getConfig();
-    const secret = config.github.webhookSecret || '';
+    try {
+      const config = getConfig();
+      const secret = config.github.webhookSecret;
+      
+      if (!secret) {
+        console.error('Webhook secret not configured');
+        return false;
+      }
 
-    const hmac = crypto.createHmac('sha256', secret);
-    const digest = 'sha256=' + hmac.update(payload).digest('hex');
+      const hmac = crypto.createHmac('sha256', secret);
+      hmac.update(payload);
+      const digest = `sha256=${hmac.digest('hex')}`;
+      
+      // 确保输入的签名格式正确
+      if (!signature.startsWith('sha256=')) {
+        console.error('Invalid signature format');
+        return false;
+      }
 
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
+      return crypto.timingSafeEqual(
+        Buffer.from(signature.trim()),
+        Buffer.from(digest.trim())
+      );
+    } catch (error) {
+      console.error('Signature verification failed:', error);
+      return false;
+    }
   }
 
   // 处理 webhook 事件
   static async handleWebhook(event: string, payload: GitHubWebhookEvent): Promise<void> {
-    switch (event) {
-    case 'push':
-      await this.handlePushEvent(payload as unknown as GitHubPushPayload);
-      break;
-    case 'pull_request':
-      await this.handlePullRequestEvent(payload as unknown as GitHubPullRequestPayload);
-      break;
-    default:
-      console.log(`Unhandled event: ${event}`);
+    try {
+      if (!payload || typeof payload !== 'object') {
+        throw new Error('Invalid payload format');
+      }
+
+      switch (event) {
+        case 'push':
+          console.log('Processing push event...');
+          await this.handlePushEvent(payload as unknown as GitHubPushPayload);
+          break;
+        case 'pull_request':
+          console.log('Processing pull request event...');
+          await this.handlePullRequestEvent(payload as unknown as GitHubPullRequestPayload);
+          break;
+        default:
+          console.log(`⚠️ Unhandled event type: ${event}`);
+      }
+    } catch (error) {
+      console.error('Failed to handle webhook:', error);
+      throw error;
     }
   }
 
@@ -144,7 +175,22 @@ export class GitHubService {
 
   // 根据 GitHub 用户名查找用户
   private static async findUserByGithubUsername(username: string): Promise<User | null> {
-    return UserRepository.findByUsername(username);
+    if (!username) {
+      console.error('Invalid username: username is empty');
+      return null;
+    }
+
+    try {
+      const user = await UserRepository.findByUsername(username);
+      if (!user) {
+        console.log(`⚠️ User not found in database: ${username}`);
+        return null;
+      }
+      return user;
+    } catch (error) {
+      console.error(`Failed to find user ${username}:`, error);
+      return null;
+    }
   }
 
   // 获取提交详情

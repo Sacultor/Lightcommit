@@ -21,6 +21,9 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
     
     // 最大供应量限制
     uint256 public constant MAX_SUPPLY = 1000000;
+
+    // 单个地址最大铸造数量，帮助缓解女巫攻击（可根据需求调整）
+    uint256 public constant MAX_MINTS_PER_ADDRESS = 1000;
     
     // 基础URI，用于构建tokenURI
     string private _baseTokenURI;
@@ -46,6 +49,16 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
     
     // 存储用户铸造的token数量
     mapping(address => uint256) private _userTokenCount;
+
+    // EIP-712: 签名验证相关
+    bytes32 public constant MINT_TYPEHASH = keccak256("Mint(address to,bytes32 commit,uint256 timestamp,string metadataURI,uint256 nonce)");
+    bytes32 private _DOMAIN_SEPARATOR;
+
+    // 防重放的 nonce（可按地址或按签名者，这里使用递增 nonce）
+    mapping(address => uint256) public nonces;
+
+    // 授权签名者（后端签名者）
+    address public authorizedSigner;
     
     // 事件定义
     event CommitMinted(
@@ -61,7 +74,7 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
     event BatchMinted(
         address indexed to,
         uint256[] tokenIds,
-        uint256 totalGasUsed
+        uint256 gasLeft
     );
     
     event BaseURIUpdated(string newBaseURI);
@@ -75,6 +88,26 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
         _baseTokenURI = baseTokenURI;
         // 从token ID 1开始
         _tokenIdCounter.increment();
+
+        uint256 chainId;
+        assembly { chainId := chainid() }
+        _DOMAIN_SEPARATOR = keccak256(abi.encode(
+            keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+            keccak256(bytes(name)),
+            keccak256(bytes("1")),
+            chainId,
+            address(this)
+        ));
+    }
+
+    // 设置授权签名者（只有 owner）
+    function setAuthorizedSigner(address signer) external onlyOwner {
+        authorizedSigner = signer;
+    }
+
+    // 获取 domain separator
+    function DOMAIN_SEPARATOR() public view returns (bytes32) {
+        return _DOMAIN_SEPARATOR;
     }
     
     /**
@@ -91,6 +124,11 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
         require(to != address(0), "Invalid recipient address");
         require(!_mintedCommits[commitData.commit], "Commit already minted");
         require(_tokenIdCounter.current() <= MAX_SUPPLY, "Max supply exceeded");
+        // 输入校验：commit 与 metadataURI 不可为空，限制长度以防恶意大字符串
+        require(bytes(commitData.commit).length > 0, "Commit hash required");
+        require(bytes(commitData.commit).length <= 256, "Commit hash too long");
+        require(bytes(metadataURI).length > 0, "metadataURI required");
+        require(_userTokenCount[to] + 1 <= MAX_MINTS_PER_ADDRESS, "Recipient mint limit exceeded");
         
         uint256 tokenId = _tokenIdCounter.current();
         _tokenIdCounter.increment();
@@ -114,6 +152,98 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
             commitData.merged
         );
     }
+
+    // 内部统一的铸造逻辑，避免代码重复（假设已通过校验）
+    function _mintCommitInternal(
+        address to,
+        CommitData memory commitData,
+        string memory metadataURI
+    ) internal {
+        uint256 tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
+
+        // 存储commit数据
+        _commitData[tokenId] = commitData;
+        _mintedCommits[commitData.commit] = true;
+        _userTokenCount[to]++;
+
+        // 铸造NFT
+        _safeMint(to, tokenId);
+        _setTokenURI(tokenId, metadataURI);
+
+        emit CommitMinted(
+            tokenId,
+            to,
+            commitData.repo,
+            commitData.commit,
+            commitData.linesAdded,
+            commitData.testsPass,
+            commitData.merged
+        );
+    }
+
+    // 使用后端签名进行铸造（EIP-712）
+    function mintWithSignature(
+        address to,
+        CommitData memory commitData,
+        string memory metadataURI,
+        uint256 timestamp,
+        uint256 nonce,
+        bytes memory signature
+    ) external whenNotPaused nonReentrant {
+        require(authorizedSigner != address(0), "Authorized signer not set");
+        require(to != address(0), "Invalid recipient address");
+        require(!_mintedCommits[commitData.commit], "Commit already minted");
+        require(_tokenIdCounter.current() <= MAX_SUPPLY, "Max supply exceeded");
+        require(bytes(commitData.commit).length > 0, "Commit hash required");
+        require(bytes(commitData.commit).length <= 256, "Commit hash too long");
+        require(bytes(metadataURI).length > 0, "metadataURI required");
+        require(_userTokenCount[to] + 1 <= MAX_MINTS_PER_ADDRESS, "Recipient mint limit exceeded");
+
+        // 验证 nonce 匹配
+        require(nonce == nonces[authorizedSigner] + 1, "Invalid nonce");
+
+        // 构造 digest
+        bytes32 structHash = keccak256(abi.encode(
+            MINT_TYPEHASH,
+            to,
+            keccak256(bytes(commitData.commit)),
+            timestamp,
+            keccak256(bytes(metadataURI)),
+            nonce
+        ));
+
+        bytes32 digest = keccak256(abi.encodePacked("\x19\x01", _DOMAIN_SEPARATOR, structHash));
+
+        // 恢复签名者
+        address signer = recoverSigner(digest, signature);
+        require(signer == authorizedSigner, "Invalid signer");
+
+        // 更新时间戳/nonce
+        nonces[authorizedSigner] = nonce;
+
+        // 调用内部铸造
+        _mintCommitInternal(to, commitData, metadataURI);
+    }
+
+    // ECDSA 签名恢复函数（简化实现）
+    function recoverSigner(bytes32 digest, bytes memory sig) internal pure returns (address) {
+        require(sig.length == 65, "Invalid signature length");
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            r := mload(add(sig, 32))
+            s := mload(add(sig, 64))
+            v := byte(0, mload(add(sig, 96)))
+        }
+        if (v < 27) {
+            v += 27;
+        }
+        require(v == 27 || v == 28, "Invalid v value");
+        return ecrecover(digest, v, r, s);
+    }
     
     /**
      * @dev 批量铸造commit NFT（gas优化）
@@ -128,14 +258,20 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
     ) external onlyOwner whenNotPaused nonReentrant {
         require(to != address(0), "Invalid recipient address");
         require(commitsData.length == metadataURIs.length, "Arrays length mismatch");
-        require(commitsData.length > 0, "Empty array");
         require(commitsData.length <= 50, "Batch size too large"); // 限制批量大小
         
         uint256[] memory tokenIds = new uint256[](commitsData.length);
+
+    // 简单输入校验
+    require(commitsData.length > 0, "Empty array");
+    require(_userTokenCount[to] + commitsData.length <= MAX_MINTS_PER_ADDRESS, "Recipient mint limit exceeded");
         
         for (uint256 i = 0; i < commitsData.length; i++) {
             require(!_mintedCommits[commitsData[i].commit], "Commit already minted");
             require(_tokenIdCounter.current() <= MAX_SUPPLY, "Max supply exceeded");
+            require(bytes(commitsData[i].commit).length > 0, "Commit hash required");
+            require(bytes(commitsData[i].commit).length <= 256, "Commit hash too long");
+            require(bytes(metadataURIs[i]).length > 0, "metadataURI required");
             
             uint256 tokenId = _tokenIdCounter.current();
             _tokenIdCounter.increment();
@@ -233,8 +369,11 @@ contract CommitNFT is ERC721, ERC721URIStorage, Ownable, Pausable, ReentrancyGua
     /**
      * @dev 紧急提取ETH（仅限owner）
      */
-    function emergencyWithdraw() external onlyOwner {
-        payable(owner()).transfer(address(this).balance);
+    function emergencyWithdraw() external onlyOwner nonReentrant {
+        // 使用 call 更稳健地转账并防止因接收合约需要更多 gas 而失败
+        uint256 bal = address(this).balance;
+        (bool ok, ) = payable(owner()).call{value: bal}("");
+        require(ok, "Withdraw failed");
     }
     
     // 重写必要的函数以支持ERC721URIStorage

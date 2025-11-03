@@ -133,3 +133,4 @@ COMMENT ON COLUMN users_new.email IS '用户邮箱';
 COMMENT ON COLUMN users_new.avatarUrl IS 'GitHub 头像 URL';
 COMMENT ON COLUMN users_new.walletAddress IS '用户钱包地址';
 
+

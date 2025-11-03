@@ -7,9 +7,9 @@ export class AuthService {
    * 使用 GitHub OAuth 登录
    */
   static async signInWithGitHub(redirectTo?: string) {
-    const baseUrl = redirectTo || 
+    const baseUrl = redirectTo ||
       (typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000');
-    
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
@@ -30,11 +30,11 @@ export class AuthService {
    * 登出
    */
   static async signOut() {
-    const { error } = await supabase.auth.signOut()
-    
+    const { error } = await supabase.auth.signOut();
+
     if (error) {
-      console.error('登出失败:', error)
-      throw error
+      console.error('登出失败:', error);
+      throw error;
     }
   }
 
@@ -42,41 +42,41 @@ export class AuthService {
    * 获取当前用户 session (客户端)
    */
   static async getSession(): Promise<{ session: Session | null; error: any }> {
-    const { data, error } = await supabase.auth.getSession()
-    return { session: data.session, error }
+    const { data, error } = await supabase.auth.getSession();
+    return { session: data.session, error };
   }
 
   /**
    * 获取当前用户信息 (客户端)
    */
   static async getUser(): Promise<{ user: User | null; error: any }> {
-    const { data, error } = await supabase.auth.getUser()
-    return { user: data.user, error }
+    const { data, error } = await supabase.auth.getUser();
+    return { user: data.user, error };
   }
 
   /**
    * 获取当前用户 session (服务端)
    */
   static async getServerSession(): Promise<{ session: Session | null; error: any }> {
-    const supabaseServer = createClient()
-    const { data, error } = await supabaseServer.auth.getSession()
-    return { session: data.session, error }
+    const supabaseServer = createClient();
+    const { data, error } = await supabaseServer.auth.getSession();
+    return { session: data.session, error };
   }
 
   /**
    * 获取当前用户信息 (服务端)
    */
   static async getServerUser(): Promise<{ user: User | null; error: any }> {
-    const supabaseServer = createClient()
-    const { data, error } = await supabaseServer.auth.getUser()
-    return { user: data.user, error }
+    const supabaseServer = createClient();
+    const { data, error } = await supabaseServer.auth.getUser();
+    return { user: data.user, error };
   }
 
   /**
    * 监听认证状态变化
    */
   static onAuthStateChange(callback: (event: string, session: Session | null) => void) {
-    return supabase.auth.onAuthStateChange(callback)
+    return supabase.auth.onAuthStateChange(callback);
   }
 
   /**
@@ -87,7 +87,7 @@ export class AuthService {
       console.log('🔄 开始同步用户信息:', {
         userId: user.id,
         email: user.email,
-        metadata: user.user_metadata
+        metadata: user.user_metadata,
       });
 
       // 准备要插入的数据
@@ -99,13 +99,13 @@ export class AuthService {
         avatarUrl: user.user_metadata?.avatar_url,
         accessToken: null, // 不存储访问令牌
         walletAddress: null,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       console.log('📝 准备插入的用户数据:', userData);
 
       // 首先检查表是否存在
-      const { data: tableCheck, error: tableError } = await supabase
+      const { error: tableError } = await supabase
         .from('users')
         .select('id')
         .limit(1);
@@ -124,7 +124,7 @@ export class AuthService {
       const { data, error } = await supabase
         .from('users')
         .upsert(userData, {
-          onConflict: 'id'
+          onConflict: 'id',
         });
 
       if (error) {
@@ -133,15 +133,15 @@ export class AuthService {
           message: error.message,
           details: error.details,
           hint: error.hint,
-          code: error.code
+          code: error.code,
         });
-        
+
         // 尝试简单的插入而不是 upsert
         console.log('🔄 尝试简单插入...');
         const { error: insertError } = await supabase
           .from('users')
           .insert(userData);
-          
+
         if (insertError) {
           console.error('插入也失败:', insertError);
           return; // 不抛出错误，避免阻止登录

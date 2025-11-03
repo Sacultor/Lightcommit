@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 
 // 加载环境变量
-config({ path: path.join(__dirname, '../.env.local') });
+config({ path: path.join(__dirname, '../.env') });
 
 async function fixRLSPolicy() {
   console.log('🔧 修复 users 表的 RLS 策略...\n');
@@ -17,7 +17,7 @@ async function fixRLSPolicy() {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
       console.error('❌ 缺少 SUPABASE_SERVICE_ROLE_KEY 环境变量');
-      console.log('💡 请在 .env.local 中添加 SUPABASE_SERVICE_ROLE_KEY');
+      console.log('💡 请在 .env 中添加 SUPABASE_SERVICE_ROLE_KEY');
       return;
     }
 
