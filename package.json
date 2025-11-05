@@ -18,7 +18,8 @@
     "lint": "pnpm --filter frontend lint",
     "lint:fix": "pnpm --filter frontend lint --fix",
     "install:all": "pnpm install && pnpm --filter frontend install && pnpm --filter hardhat install",
-    "postinstall": "pnpm compile"
+    "postinstall": "pnpm compile",
+    "prepare": "husky"
   },
   "packageManager": "pnpm@10.15.1",
   "keywords": [
@@ -49,5 +50,14 @@
   "dependencies": {
     "dotenv": "^17.2.3",
     "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6"
+  },
+  "lint-staged": {
+    "frontend/src/**/*.{ts,tsx,js,jsx}": [
+      "pnpm --filter frontend exec eslint --fix --max-warnings=0 --"
+    ]
   }
 }
