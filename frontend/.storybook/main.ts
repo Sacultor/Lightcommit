@@ -1,9 +1,4 @@
 import type { StorybookConfig } from '@storybook/nextjs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const config: StorybookConfig = {
   // 指定 stories 文件的位置
@@ -27,27 +22,9 @@ const config: StorybookConfig = {
     options: {},
   },
   
-  // 文档配置：自动为带有 'autodocs' 标签的组件生成文档
-  docs: {
-    autodocs: 'tag',
-  },
-  
   // 静态资源目录，Storybook 可以直接访问这些文件
   // 例如：在 stories 中可以使用 '/assets/logo.png' 引用 public/assets/logo.png
   staticDirs: ['../public'],
-  
-  // Webpack 最终配置：自定义 webpack 配置
-  webpackFinal: async (config) => {
-    if (config.resolve) {
-      // 配置路径别名，使 '@/...' 指向 src 目录
-      // 这样在 stories 中可以使用 '@/components/Button' 而不是 '../../../components/Button'
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@': path.resolve(__dirname, '../src'),
-      };
-    }
-    return config;
-  },
 };
 
 export default config;

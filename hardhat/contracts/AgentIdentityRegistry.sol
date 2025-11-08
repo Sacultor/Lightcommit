@@ -105,4 +105,3 @@ contract AgentIdentityRegistry is Ownable, Pausable {
         _unpause();
     }
 }
-

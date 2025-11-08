@@ -19,20 +19,18 @@ interface IReputationRegistry {
     }
     
     function getFeedbackByCommit(string memory repo, string memory commitSha) external view returns (Feedback memory);
-    function isCommitProcessed(string memory repo, string memory commitSha) external view returns (bool);
 }
 
+
 contract ValidationRegistry is AccessControl, Pausable, ReentrancyGuard {
-    bytes32 public constant VALIDATOR_ROLE = keccak256("VALIDATOR_ROLE");
+    CommitNFT public immutable nftContract;
+    IReputationRegistry public immutable reputationRegistry;
     
-    CommitNFT public nftContract;
-    IReputationRegistry public reputationRegistry;
+    uint256 public mintThreshold;
+    uint256 public constant MAX_MINT_THRESHOLD = 100;
+    uint256 public constant MIN_MINT_THRESHOLD = 60;
     
-    uint256 public mintThreshold = 80;
-    uint256 public maxMintThreshold = 100;
-    uint256 public minMintThreshold = 60;
-    
-    mapping(bytes32 => bool) public validated;
+    mapping(bytes32 => bool) public isMinted;
     mapping(bytes32 => uint256) public commitToTokenId;
     
     uint256 public totalValidations;
@@ -70,37 +68,40 @@ contract ValidationRegistry is AccessControl, Pausable, ReentrancyGuard {
         uint256 timestamp
     );
     
+    error InvalidAddress();
+    error InvalidInput();
+    error AlreadyMinted();
+    error FeedbackNotFound();
+    error InvalidThreshold();
+    
     constructor(address _nftContract, address _reputationRegistry) {
-        require(_nftContract != address(0), "Invalid NFT contract");
-        require(_reputationRegistry != address(0), "Invalid reputation registry");
+        if (_nftContract == address(0)) revert InvalidAddress();
+        if (_reputationRegistry == address(0)) revert InvalidAddress();
         
         nftContract = CommitNFT(_nftContract);
         reputationRegistry = IReputationRegistry(_reputationRegistry);
+        mintThreshold = 80;
         
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(VALIDATOR_ROLE, msg.sender);
     }
     
     function requestValidation(
-        string memory repo,
-        string memory commitSha,
+        string calldata repo,
+        string calldata commitSha,
         address contributor,
-        string memory metadataURI
-    ) external whenNotPaused nonReentrant returns (bool shouldMint) {
-        require(bytes(repo).length > 0, "Invalid repo");
-        require(bytes(commitSha).length > 0, "Invalid commit SHA");
-        require(contributor != address(0), "Invalid contributor");
+        string calldata metadataURI
+    ) external whenNotPaused nonReentrant returns (bool didMint) {
+        if (bytes(repo).length == 0) revert InvalidInput();
+        if (bytes(commitSha).length == 0) revert InvalidInput();
+        if (contributor == address(0)) revert InvalidAddress();
         
         bytes32 commitHash = keccak256(abi.encodePacked(repo, commitSha));
-        require(!validated[commitHash], "Already validated");
         
-        require(
-            reputationRegistry.isCommitProcessed(repo, commitSha),
-            "Feedback not submitted yet"
-        );
+        if (isMinted[commitHash]) revert AlreadyMinted();
         
         IReputationRegistry.Feedback memory feedback = reputationRegistry.getFeedbackByCommit(repo, commitSha);
         
+        if (!feedback.exists) revert FeedbackNotFound();
         emit ValidationRequested(
             commitHash,
             contributor,
@@ -110,10 +111,9 @@ contract ValidationRegistry is AccessControl, Pausable, ReentrancyGuard {
             block.timestamp
         );
         
-        validated[commitHash] = true;
         totalValidations++;
-        
-        shouldMint = feedback.score >= mintThreshold;
+
+        bool shouldMint = feedback.score >= mintThreshold;
         
         emit ValidationCompleted(
             commitHash,
@@ -124,6 +124,8 @@ contract ValidationRegistry is AccessControl, Pausable, ReentrancyGuard {
         );
         
         if (shouldMint) {
+            isMinted[commitHash] = true;
+
             uint256 tokenId = _triggerMint(
                 contributor,
                 repo,
@@ -143,27 +145,29 @@ contract ValidationRegistry is AccessControl, Pausable, ReentrancyGuard {
                 metadataURI,
                 block.timestamp
             );
+
+            return true; // didMint = true
         }
         
-        return shouldMint;
+        return false; // didMint = false
     }
     
     function _triggerMint(
         address to,
-        string memory repo,
-        string memory commitSha,
+        string calldata repo,
+        string calldata commitSha,
         IReputationRegistry.Feedback memory feedback,
-        string memory metadataURI
+        string calldata metadataURI
     ) internal returns (uint256) {
         CommitNFT.CommitData memory commitData = CommitNFT.CommitData({
-            repo: repo,
-            commit: commitSha,
+            repo: string(repo),
+            commit: string(commitSha),
             linesAdded: 0,
             linesDeleted: 0,
             testsPass: feedback.score >= mintThreshold,
             timestamp: feedback.timestamp,
-            author: addressToString(to),
-            message: string(abi.encodePacked("Score: ", uintToString(feedback.score))),
+            author: _addressToString(to),
+            message: string(abi.encodePacked("Score: ", _uintToString(feedback.score))),
             merged: true
         });
         
@@ -172,58 +176,7 @@ contract ValidationRegistry is AccessControl, Pausable, ReentrancyGuard {
         return nftContract.getCurrentTokenId() - 1;
     }
     
-    function setMintThreshold(uint256 newThreshold) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(newThreshold >= minMintThreshold, "Threshold too low");
-        require(newThreshold <= maxMintThreshold, "Threshold too high");
-        
-        uint256 oldThreshold = mintThreshold;
-        mintThreshold = newThreshold;
-        
-        emit ThresholdUpdated(oldThreshold, newThreshold, block.timestamp);
-    }
-    
-    function setThresholdLimits(
-        uint256 newMin,
-        uint256 newMax
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(newMin < newMax, "Invalid limits");
-        require(newMax <= 100, "Max too high");
-        
-        minMintThreshold = newMin;
-        maxMintThreshold = newMax;
-    }
-    
-    function getValidationStatus(
-        string memory repo,
-        string memory commitSha
-    ) external view returns (
-        bool isValidated,
-        bool hasMinted,
-        uint256 tokenId
-    ) {
-        bytes32 commitHash = keccak256(abi.encodePacked(repo, commitSha));
-        isValidated = validated[commitHash];
-        tokenId = commitToTokenId[commitHash];
-        hasMinted = tokenId != 0;
-    }
-    
-    function grantValidatorRole(address validator) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        grantRole(VALIDATOR_ROLE, validator);
-    }
-    
-    function revokeValidatorRole(address validator) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        revokeRole(VALIDATOR_ROLE, validator);
-    }
-    
-    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _pause();
-    }
-    
-    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
-        _unpause();
-    }
-    
-    function addressToString(address _addr) internal pure returns (string memory) {
+    function _addressToString(address _addr) internal pure returns (string memory) {
         bytes32 value = bytes32(uint256(uint160(_addr)));
         bytes memory alphabet = "0123456789abcdef";
         bytes memory str = new bytes(42);
@@ -236,7 +189,7 @@ contract ValidationRegistry is AccessControl, Pausable, ReentrancyGuard {
         return string(str);
     }
     
-    function uintToString(uint256 value) internal pure returns (string memory) {
+    function _uintToString(uint256 value) internal pure returns (string memory) {
         if (value == 0) {
             return "0";
         }
@@ -254,5 +207,35 @@ contract ValidationRegistry is AccessControl, Pausable, ReentrancyGuard {
         }
         return string(buffer);
     }
+    
+    function setMintThreshold(uint256 newThreshold) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (newThreshold < MIN_MINT_THRESHOLD || newThreshold > MAX_MINT_THRESHOLD) {
+            revert InvalidThreshold();
+        }
+        
+        uint256 oldThreshold = mintThreshold;
+        mintThreshold = newThreshold;
+        
+        emit ThresholdUpdated(oldThreshold, newThreshold, block.timestamp);
+    }
+    
+    function getValidationStatus(
+        string calldata repo,
+        string calldata commitSha
+    ) external view returns (
+        bool hasBeenMinted,
+        uint256 tokenId
+    ) {
+        bytes32 commitHash = keccak256(abi.encodePacked(repo, commitSha));
+        tokenId = commitToTokenId[commitHash];
+        hasBeenMinted = tokenId != 0;
+    }
+    
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _pause();
+    }
+    
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _unpause();
+    }
 }
-
