@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       console.error('❌ Failed to parse request body:', error);
       return NextResponse.json(
         { error: 'Invalid request body' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 

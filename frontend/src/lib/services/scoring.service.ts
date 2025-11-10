@@ -1,5 +1,3 @@
-import { GitHubService } from '@/lib/services/github.service';
-
 export interface ScoreBreakdown {
   convention: number;
   size: number;

@@ -1,22 +1,12 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
-import { useState } from 'react';
+import { RainbowKitProvider } from '@/lib/contexts/RainbowKitProvider';
 import { Web3Provider } from '@/lib/contexts/Web3Context';
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000,
-        refetchOnWindowFocus: false,
-      },
-    },
-  }));
-
   return (
-    <QueryClientProvider client={queryClient}>
+    <RainbowKitProvider>
       <Web3Provider>
         {children}
         <Toaster
@@ -30,7 +20,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           }}
         />
       </Web3Provider>
-    </QueryClientProvider>
+    </RainbowKitProvider>
   );
 }
 

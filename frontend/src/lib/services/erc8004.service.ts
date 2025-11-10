@@ -30,7 +30,7 @@ export class ERC8004Service {
     repo: string,
     commitSha: string,
     score: number,
-    timestamp: number
+    timestamp: number,
   ): string {
     const data = JSON.stringify({
       repo,
@@ -44,7 +44,7 @@ export class ERC8004Service {
   static async generateMetadataJSON(
     feedback: ERC8004Feedback,
     breakdown: ScoreBreakdown,
-    evidence: ERC8004Metadata['evidence']
+    evidence: ERC8004Metadata['evidence'],
   ): Promise<string> {
     const metadata: ERC8004Metadata = {
       score: feedback.score,
@@ -55,7 +55,7 @@ export class ERC8004Service {
       timestamp: feedback.timestamp,
       evaluator: process.env.NEXT_PUBLIC_EVALUATOR_ADDRESS || '',
     };
-    
+
     return JSON.stringify(metadata, null, 2);
   }
 
@@ -86,7 +86,7 @@ export class ERC8004Service {
     feedback: ERC8004Feedback,
     signer: ethers.Signer,
     chainId: number,
-    verifyingContract: string
+    verifyingContract: string,
   ): Promise<string> {
     const domain = this.getEIP712Domain(chainId, verifyingContract);
     const types = this.getEIP712Types();
@@ -108,7 +108,7 @@ export class ERC8004Service {
     feedback: ERC8004Feedback,
     signature: string,
     chainId: number,
-    verifyingContract: string
+    verifyingContract: string,
   ): Promise<string> {
     const domain = this.getEIP712Domain(chainId, verifyingContract);
     const types = this.getEIP712Types();
@@ -125,7 +125,7 @@ export class ERC8004Service {
         timestamp: feedback.timestamp,
         nonce: feedback.nonce,
       },
-      signature
+      signature,
     );
 
     return recoveredAddress;
@@ -165,7 +165,7 @@ export class ERC8004Service {
     try {
       const url = this.parseIPFSUri(uri);
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch metadata');
       }

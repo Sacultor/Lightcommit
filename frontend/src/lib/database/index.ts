@@ -1,4 +1,4 @@
-import { getSupabaseService, getSupabaseDB } from './supabase';
+import { getSupabaseService } from './supabase';
 import { serviceSupabase } from '../supabase/service';
 import type { SupabaseClient } from '@supabase/supabase-js';
 

@@ -7,21 +7,21 @@ const config: StorybookConfig = {
     '../src/**/*.mdx',  // Markdown 格式的组件文档
     '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)',  // 所有 stories 文件
   ],
-  
+
   // Storybook 插件配置
   addons: [
     '@storybook/addon-essentials',  // 核心功能集合（控制面板、操作、视口等）
     '@storybook/addon-interactions',  // 交互测试插件
     '@storybook/addon-links',  // 在 stories 之间创建链接
   ],
-  
+
   // 框架配置：使用 Next.js 适配器
   // 这确保 Storybook 可以正确处理 Next.js 特性（图片、字体优化等）
   framework: {
     name: '@storybook/nextjs',
     options: {},
   },
-  
+
   // 静态资源目录，Storybook 可以直接访问这些文件
   // 例如：在 stories 中可以使用 '/assets/logo.png' 引用 public/assets/logo.png
   staticDirs: ['../public'],

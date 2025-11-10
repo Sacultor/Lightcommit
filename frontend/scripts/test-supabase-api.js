@@ -29,17 +29,17 @@ async function testSupabaseAPI() {
 
     // 测试REST API健康检查
     console.log('🔍 测试REST API连接...');
-    
+
     const healthUrl = `${supabaseUrl}/rest/v1/`;
-    
+
     try {
       const response = await fetch(healthUrl, {
         method: 'GET',
         headers: {
           'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       console.log('HTTP状态码:', response.status);
@@ -47,7 +47,7 @@ async function testSupabaseAPI() {
 
       if (response.ok) {
         console.log('✅ REST API连接成功');
-        
+
         const responseText = await response.text();
         console.log('响应内容:', responseText.substring(0, 200) + '...');
       } else {
@@ -61,17 +61,17 @@ async function testSupabaseAPI() {
 
     // 测试认证API
     console.log('\n🔐 测试认证API...');
-    
+
     const authUrl = `${supabaseUrl}/auth/v1/user`;
-    
+
     try {
       const authResponse = await fetch(authUrl, {
         method: 'GET',
         headers: {
           'apikey': supabaseKey,
           'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       });
 
       console.log('认证API状态码:', authResponse.status);
@@ -93,14 +93,14 @@ async function testSupabaseAPI() {
 
     // 使用Supabase客户端测试
     console.log('\n📡 使用Supabase客户端测试...');
-    
+
     const { createClient } = require('@supabase/supabase-js');
-    
+
     const supabase = createClient(supabaseUrl, supabaseKey);
-    
+
     // 测试简单的认证状态
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
+
     if (sessionError) {
       console.log('ℹ️ 获取会话信息:', sessionError.message);
     } else {
@@ -108,7 +108,7 @@ async function testSupabaseAPI() {
     }
 
     console.log('\n🎉 Supabase API测试完成！');
-    
+
     console.log('\n📊 测试总结:');
     console.log('- Supabase客户端库: ✅ 可以正常创建');
     console.log('- API连接: 需要检查上述测试结果');

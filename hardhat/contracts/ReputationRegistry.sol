@@ -33,11 +33,20 @@ contract ReputationRegistry is AccessControl, Pausable, ReentrancyGuard, EIP712 
     uint256 public totalFeedbacks;
     mapping(address => uint256) public nonces; // 签名者的 Nonce
 
+    struct SubmitParams {
+        address contributor;
+        string repo;
+        string commitSha;
+        uint16 score;
+        bytes32 feedbackHash;
+        string metadataURI;
+        uint256 timestamp;
+        uint256 nonce;
+    }
+    
     bytes32 private constant FEEDBACK_TYPEHASH = keccak256(
         "Feedback(address contributor,string repo,string commitSha,uint256 score,bytes32 feedbackHash,uint256 timestamp,uint256 nonce)"
     );
-
-    // (自定义错误保持不变)
     error InvalidContributorAddress();
     error ScoreTooHigh();
     error EmptyRepo();
@@ -73,74 +82,54 @@ contract ReputationRegistry is AccessControl, Pausable, ReentrancyGuard, EIP712 
         _grantRole(EVALUATOR_ROLE, msg.sender);
     }
 
-    // (核心功能 submitFeedback 保持不变)
     function submitFeedback(
-        address contributor,
-        string calldata repo,
-        string calldata commitSha,
-        uint16 score,
-        bytes32 feedbackHash,
-        string calldata metadataURI,
-        uint256 signatureTimestamp,
-        uint256 signatureNonce,
+        SubmitParams calldata params,
         bytes calldata signature
     ) external whenNotPaused nonReentrant {
-        if (contributor == address(0)) revert InvalidContributorAddress();
-        if (score > 100) revert ScoreTooHigh();
-        if (bytes(repo).length == 0) revert EmptyRepo();
-        if (bytes(commitSha).length == 0) revert EmptyCommitSHA();
+        if (params.contributor == address(0)) revert InvalidContributorAddress();
+        if (params.score > 100) revert ScoreTooHigh();
+        if (bytes(params.repo).length == 0) revert EmptyRepo();
+        if (bytes(params.commitSha).length == 0) revert EmptyCommitSHA();
 
-        bytes32 commitHash = keccak256(abi.encodePacked(repo, commitSha));
+        bytes32 commitHash = keccak256(abi.encodePacked(params.repo, params.commitSha));
         
         if (feedbacks[commitHash].exists) revert CommitAlreadyProcessed();
 
-        address signer = _verifySignature(
-            contributor,
-            repo,
-            commitSha,
-            score,
-            feedbackHash,
-            signatureTimestamp,
-            signatureNonce,
-            signature
-        );
+        address signer = _verifySignature(params, signature);
 
-        _processAndEmit(commitHash, contributor, repo, commitSha, score, feedbackHash, metadataURI, signer);
+        _storeFeedback(commitHash, params, signer);
+
+        _updateReputation(params.contributor, params.score);
+        
+        _emitEvents(commitHash, params, signer);
     }
 
-    // --- 内部辅助函数 (保持不变, 这是好的实践) ---
-
     function _verifySignature(
-        address contributor,
-        string calldata repo,
-        string calldata commitSha,
-        uint16 score,
-        bytes32 feedbackHash,
-        uint256 signatureTimestamp,
-        uint256 signatureNonce,
+        SubmitParams calldata params,
         bytes calldata signature
     ) internal returns (address) {
-        bytes32 structHash = keccak256(
-            abi.encode(
-                FEEDBACK_TYPEHASH,
-                contributor,
-                keccak256(bytes(repo)),
-                keccak256(bytes(commitSha)),
-                score,
-                feedbackHash,
-                signatureTimestamp,
-                signatureNonce
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    FEEDBACK_TYPEHASH,
+                    params.contributor,
+                    keccak256(bytes(params.repo)),
+                    keccak256(bytes(params.commitSha)),
+                    params.score,
+                    params.feedbackHash,
+                    params.timestamp,
+                    params.nonce
+                )
             )
         );
         
-        bytes32 digest = _hashTypedDataV4(structHash);
         address signer = digest.recover(signature);
         
         if (!hasRole(EVALUATOR_ROLE, signer)) revert InvalidSignature();
-        if (block.timestamp < signatureTimestamp) revert SignatureExpired();
-        if (block.timestamp - signatureTimestamp > 300) revert SignatureExpired();
+        if (block.timestamp < params.timestamp) revert SignatureExpired();
+        if (block.timestamp - params.timestamp > 300) revert SignatureExpired();
 
-        if (signatureNonce != nonces[signer]) revert InvalidNonce();
+        if (params.nonce != nonces[signer]) revert InvalidNonce();
         nonces[signer]++;
 
         return signer;
@@ -148,23 +137,18 @@ contract ReputationRegistry is AccessControl, Pausable, ReentrancyGuard, EIP712 
 
     function _storeFeedback(
         bytes32 commitHash,
-        address contributor,
-        string calldata repo,
-        string calldata commitSha,
-        uint16 score,
-        bytes32 feedbackHash,
-        string calldata metadataURI,
+        SubmitParams calldata params,
         address evaluator
     ) internal {
         feedbacks[commitHash] = Feedback({
-            contributor: contributor,
-            repo: string(repo),
-            commitSha: string(commitSha),
-            feedbackHash: feedbackHash,
+            contributor: params.contributor,
+            repo: string(params.repo),
+            commitSha: string(params.commitSha),
+            feedbackHash: params.feedbackHash,
             timestamp: uint64(block.timestamp),
-            score: score,
+            score: params.score,
             evaluator: evaluator,
-            metadataURI: string(metadataURI),
+            metadataURI: string(params.metadataURI),
             exists: true
         });
         
@@ -178,49 +162,59 @@ contract ReputationRegistry is AccessControl, Pausable, ReentrancyGuard, EIP712 
 
     function _emitEvents(
         bytes32 commitHash,
-        address contributor,
-        string calldata repo,
-        string calldata commitSha,
-        uint16 score,
-        bytes32 feedbackHash,
-        string calldata metadataURI,
+        SubmitParams calldata params,
         address signer
     ) internal {
         emit FeedbackSubmitted(
             commitHash,
-            contributor,
-            repo,
-            commitSha,
-            score,
-            feedbackHash,
-            metadataURI,
+            params.contributor,
+            params.repo,
+            params.commitSha,
+            params.score,
+            params.feedbackHash,
+            params.metadataURI,
             signer,
             block.timestamp
         );
 
-        // --- 修改点 4: 在此处内部计算平均分, 不再需要外部 Geter ---
-        uint256 totalScore = contributorTotalScore[contributor];
-        uint256 feedbackCount = contributorFeedbackCount[contributor];
-        uint256 averageScore = 0;
-        if (feedbackCount > 0) {
-            averageScore = totalScore / feedbackCount;
-        }
+        uint256 totalScore = contributorTotalScore[params.contributor];
+        uint256 feedbackCount = contributorFeedbackCount[params.contributor];
+        uint256 averageScore = feedbackCount > 0 ? totalScore / feedbackCount : 0;
         
         emit ReputationUpdated(
-            contributor,
+            params.contributor,
             totalScore,
             feedbackCount,
             averageScore
         );
     }
 
-    // --- (修改点) 移除了所有多余的 Getter 函数 ---
-    // 移除了 getFeedback
-    // 移除了 getFeedbackByCommit
-    // 移除了 getContributorReputation
-    // 移除了 getAverageScore
-
-    // --- Admin 函数 (保持不变) ---
+    function getFeedbackByCommit(
+        string memory repo,
+        string memory commitSha
+    ) external view returns (Feedback memory) {
+        bytes32 commitHash = keccak256(abi.encodePacked(repo, commitSha));
+        if (!feedbacks[commitHash].exists) revert FeedbackNotFound();
+        return feedbacks[commitHash];
+    }
+    
+    function getContributorReputation(address contributor) external view returns (
+        uint256 totalScore,
+        uint256 feedbackCount,
+        uint256 averageScore
+    ) {
+        totalScore = contributorTotalScore[contributor];
+        feedbackCount = contributorFeedbackCount[contributor];
+        if (feedbackCount > 0) {
+            averageScore = totalScore / feedbackCount;
+        }
+    }
+    
+    function isCommitProcessed(string memory repo, string memory commitSha) external view returns (bool) {
+        bytes32 commitHash = keccak256(abi.encodePacked(repo, commitSha));
+        return feedbacks[commitHash].exists;
+    }
+    
     function grantEvaluatorRole(address evaluator) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(EVALUATOR_ROLE, evaluator);
     }

@@ -20,10 +20,10 @@ async function verifyDatabaseConfig() {
 
   // 1. 检查必需的环境变量
   console.log('📋 检查环境变量配置:');
-  
+
   const requiredEnvVars = [
     { key: 'SUPABASE_URL', description: 'Supabase项目URL' },
-    { key: 'SUPABASE_ANON_KEY', description: 'Supabase匿名密钥' }
+    { key: 'SUPABASE_ANON_KEY', description: 'Supabase匿名密钥' },
   ];
 
   requiredEnvVars.forEach(({ key, description }) => {
@@ -33,11 +33,11 @@ async function verifyDatabaseConfig() {
         const url = process.env[key];
         if (!url.startsWith('https://')) {
           warnings.push(`${key} 应该以 https:// 开头`);
-          console.log(`     ⚠️ 警告: 应该以 https:// 开头`);
+          console.log('     ⚠️ 警告: 应该以 https:// 开头');
         }
         if (!url.includes('supabase.co')) {
           warnings.push(`${key} 可能不是有效的 Supabase URL`);
-          console.log(`     ⚠️ 警告: 可能不是有效的 Supabase URL`);
+          console.log('     ⚠️ 警告: 可能不是有效的 Supabase URL');
         }
       }
     } else {
@@ -51,10 +51,10 @@ async function verifyDatabaseConfig() {
 
   // 2. 检查可选的环境变量
   console.log('📋 检查可选配置:');
-  
+
   const optionalEnvVars = [
     { key: 'DATABASE_URL', description: 'PostgreSQL连接字符串（已弃用）' },
-    { key: 'DB_CONNECTION_TYPE', description: '连接类型（已弃用）' }
+    { key: 'DB_CONNECTION_TYPE', description: '连接类型（已弃用）' },
   ];
 
   optionalEnvVars.forEach(({ key, description }) => {
@@ -71,24 +71,24 @@ async function verifyDatabaseConfig() {
   // 3. 测试 Supabase 连接
   if (!hasErrors) {
     console.log('🔌 测试 Supabase 连接...');
-    
+
     try {
       const { createClient } = require('@supabase/supabase-js');
-      
+
       const supabase = createClient(
         process.env.SUPABASE_URL,
         process.env.SUPABASE_ANON_KEY,
         {
           auth: {
             autoRefreshToken: true,
-            persistSession: false
-          }
-        }
+            persistSession: false,
+          },
+        },
       );
 
       // 测试认证端点
       const { error: authError } = await supabase.auth.getSession();
-      
+
       if (authError && !authError.message.includes('session_not_found')) {
         console.log('  ❌ 认证测试失败:', authError.message);
         errors.push(`认证测试失败: ${authError.message}`);
@@ -99,7 +99,7 @@ async function verifyDatabaseConfig() {
 
       // 测试数据库连接
       console.log('  🔍 测试数据库查询...');
-      
+
       // 尝试查询系统表
       const { error: dbError } = await supabase
         .from('information_schema.tables')
