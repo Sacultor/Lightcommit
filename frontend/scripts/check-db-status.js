@@ -19,7 +19,7 @@ async function checkDatabaseStatus() {
     // 1. 环境变量检查
     console.log('\n📋 第 1 步：环境变量检查');
     console.log('─'.repeat(60));
-    
+
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
@@ -33,18 +33,18 @@ async function checkDatabaseStatus() {
     // 2. 创建客户端
     console.log('\n📡 第 2 步：创建 Supabase 客户端');
     console.log('─'.repeat(60));
-    
+
     const supabase = createClient(supabaseUrl, supabaseKey, {
       auth: {
-        persistSession: false
-      }
+        persistSession: false,
+      },
     });
     console.log('✅ Supabase 客户端创建成功');
 
     // 3. 测试认证服务
     console.log('\n🔐 第 3 步：测试认证服务');
     console.log('─'.repeat(60));
-    
+
     const { error: authError } = await supabase.auth.getSession();
     if (authError && !authError.message.includes('session_not_found') && !authError.message.includes('Auth session missing')) {
       console.log('⚠️  认证服务异常:', authError.message);
@@ -55,7 +55,7 @@ async function checkDatabaseStatus() {
     // 4. 尝试查询应用表
     console.log('\n📊 第 4 步：检查应用表');
     console.log('─'.repeat(60));
-    
+
     const tables = ['users', 'repositories', 'contributions'];
     let existingTables = [];
     let missingTables = [];
@@ -68,7 +68,7 @@ async function checkDatabaseStatus() {
           .limit(1);
 
         if (error) {
-          if (error.message.includes('Could not find the table') || 
+          if (error.message.includes('Could not find the table') ||
               error.message.includes('relation') ||
               error.code === 'PGRST205') {
             console.log(`❌ 表 "${tableName}" 不存在或无法访问`);
@@ -92,13 +92,13 @@ async function checkDatabaseStatus() {
     // 5. 检查 RPC 函数
     console.log('\n🔧 第 5 步：检查 RPC 函数');
     console.log('─'.repeat(60));
-    
+
     const rpcFunctions = ['health_check', 'get_db_version'];
-    
+
     for (const funcName of rpcFunctions) {
       try {
         const { data, error } = await supabase.rpc(funcName);
-        
+
         if (error) {
           if (error.message.includes('Could not find the function')) {
             console.log(`❌ RPC 函数 "${funcName}" 未创建`);

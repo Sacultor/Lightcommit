@@ -11,10 +11,10 @@ async function checkUsersTable() {
 
   try {
     const { createClient } = require('@supabase/supabase-js');
-    
+
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
 
     console.log('📡 连接到 Supabase...');
@@ -71,7 +71,7 @@ async function checkUsersTable() {
       avatarUrl: 'https://example.com/avatar.jpg',
       accessToken: null,
       walletAddress: null,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     const { data: insertData, error: insertError } = await supabase
@@ -82,7 +82,7 @@ async function checkUsersTable() {
       console.error('❌ 测试插入失败:', insertError);
     } else {
       console.log('✅ 测试插入成功');
-      
+
       // 清理测试数据
       await supabase
         .from('users')

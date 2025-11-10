@@ -16,7 +16,15 @@ const config: HardhatUserConfig = {
       // https://docs.zksync.io/build/tooling/hardhat/hardhat-zksync-solc#configuration
     },
   },
-  solidity: "0.8.28",
+  solidity: {
+    version: "0.8.28",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 800,
+      },
+    },
+  },
   networks: {
     hardhatMainnet: {
       url: "",

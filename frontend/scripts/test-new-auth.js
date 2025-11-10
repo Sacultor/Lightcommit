@@ -15,7 +15,7 @@ async function testNewAuth() {
   console.log('📋 检查环境变量:');
   const requiredEnvVars = [
     'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   ];
 
   requiredEnvVars.forEach(key => {
@@ -34,15 +34,15 @@ async function testNewAuth() {
     console.log('🔌 测试 Supabase 连接:');
     try {
       const { createClient } = require('@supabase/supabase-js');
-      
+
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       );
 
       // 测试基本连接
       const { data, error } = await supabase.auth.getSession();
-      
+
       if (error && !error.message.includes('session_not_found')) {
         console.log(`  ❌ 连接失败: ${error.message}`);
         hasErrors = true;
@@ -68,7 +68,7 @@ async function testNewAuth() {
     'src/app/auth/callback/page.tsx',
     'src/app/api/auth/logout/route.ts',
     'src/app/api/auth/user/route.ts',
-    'src/middleware.ts'
+    'src/middleware.ts',
   ];
 
   const fs = require('fs');

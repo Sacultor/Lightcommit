@@ -13,7 +13,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUP
 
 async function verifyTables() {
   console.log('🔍 验证数据库表结构\n');
-  
+
   if (!supabaseUrl || !supabaseKey) {
     console.error('❌ 缺少 Supabase 环境变量');
     process.exit(1);
@@ -22,13 +22,13 @@ async function verifyTables() {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   const tables = ['users', 'repositories', 'contributions'];
-  
+
   for (const table of tables) {
     const { data, error } = await supabase
       .from(table)
       .select('*')
       .limit(1);
-    
+
     if (error) {
       console.error(`❌ 表 ${table} 访问失败:`, error.message);
     } else {

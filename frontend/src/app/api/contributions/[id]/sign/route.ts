@@ -1,29 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 import { ContributionRepository } from '@/lib/database/repositories/contribution.repository';
-import { ScoringService } from '@/lib/services/scoring.service';
 import { ERC8004Service, ERC8004Feedback } from '@/lib/services/erc8004.service';
 import { getConfig } from '@/lib/config';
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  context: { params: { id: string } },
 ) {
   try {
-    const { id } = params;
-    
+    const { id } = context.params;
+
     const contribution = await ContributionRepository.findById(id);
     if (!contribution) {
       return NextResponse.json(
         { error: 'Contribution not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (!contribution.score) {
       return NextResponse.json(
         { error: 'Contribution not scored yet' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +31,7 @@ export async function GET(
     if (!privateKey) {
       return NextResponse.json(
         { error: 'Evaluator private key not configured' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -44,27 +43,27 @@ export async function GET(
     if (!userWallet) {
       return NextResponse.json(
         { error: 'User wallet address not found' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const repo = contribution.repository?.fullName || '';
-    const commitSha = (contribution.metadata as any)?.sha || '';
-    
+    const commitSha = (contribution.metadata as Record<string, unknown>)?.sha as string || '';
+
     if (!repo || !commitSha) {
       return NextResponse.json(
         { error: 'Missing repo or commit SHA' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
-    
+
     const feedbackHash = ERC8004Service.generateFeedbackHash(
       repo,
       commitSha,
       contribution.score,
-      timestamp
+      timestamp,
     );
 
     const nonce = 0;
@@ -79,7 +78,7 @@ export async function GET(
       nonce,
     };
 
-    const breakdown = (contribution.scoreBreakdown as any) || {
+    const breakdown = (contribution.scoreBreakdown as Record<string, number>) || {
       convention: 0,
       size: 0,
       filesImpact: 0,
@@ -96,7 +95,7 @@ export async function GET(
     const metadataJSON = await ERC8004Service.generateMetadataJSON(
       feedback,
       breakdown,
-      evidence
+      evidence,
     );
 
     const metadataURI = await ERC8004Service.uploadToIPFS(metadataJSON);
@@ -104,32 +103,52 @@ export async function GET(
     const chainId = config.blockchain.chainId;
     const reputationRegistryAddress = config.blockchain.reputationRegistry;
 
+    const { ReputationRegistryABI } = await import('@/lib/contracts');
+    const reputationContract = new ethers.Contract(
+      reputationRegistryAddress,
+      ReputationRegistryABI,
+      provider,
+    );
+
+    const currentNonce = await reputationContract.nonces(evaluatorAddress);
+
+    const params = {
+      contributor: userWallet,
+      repo,
+      commitSha,
+      score: contribution.score,
+      feedbackHash,
+      metadataURI,
+      timestamp,
+      nonce: Number(currentNonce),
+    };
+
     const signature = await ERC8004Service.signFeedback(
-      feedback,
+      { ...feedback, nonce: Number(currentNonce) },
       signer,
       chainId,
-      reputationRegistryAddress
+      reputationRegistryAddress,
     );
 
     const recoveredAddress = await ERC8004Service.verifySignature(
-      feedback,
+      { ...feedback, nonce: Number(currentNonce) },
       signature,
       chainId,
-      reputationRegistryAddress
+      reputationRegistryAddress,
     );
 
     if (recoveredAddress.toLowerCase() !== evaluatorAddress.toLowerCase()) {
       return NextResponse.json(
         { error: 'Signature verification failed' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
-      feedback,
+      params,
       signature,
-      metadataURI,
       metadataJSON,
+      breakdown,
       evaluator: evaluatorAddress,
       shouldMint: contribution.score >= 80,
     });
@@ -137,8 +156,9 @@ export async function GET(
     console.error('Sign feedback error:', error);
     return NextResponse.json(
       { error: 'Failed to sign feedback' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
+
 

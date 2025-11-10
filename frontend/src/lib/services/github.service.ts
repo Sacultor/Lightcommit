@@ -24,7 +24,7 @@ export class GitHubService {
     try {
       const config = getConfig();
       const secret = config.github.webhookSecret;
-      
+
       if (!secret) {
         console.error('Webhook secret not configured');
         return false;
@@ -33,7 +33,7 @@ export class GitHubService {
       const hmac = crypto.createHmac('sha256', secret);
       hmac.update(payload);
       const digest = `sha256=${hmac.digest('hex')}`;
-      
+
       // 确保输入的签名格式正确
       if (!signature.startsWith('sha256=')) {
         console.error('Invalid signature format');
@@ -42,7 +42,7 @@ export class GitHubService {
 
       return crypto.timingSafeEqual(
         Buffer.from(signature.trim()),
-        Buffer.from(digest.trim())
+        Buffer.from(digest.trim()),
       );
     } catch (error) {
       console.error('Signature verification failed:', error);
@@ -58,16 +58,16 @@ export class GitHubService {
       }
 
       switch (event) {
-        case 'push':
-          console.log('Processing push event...');
-          await this.handlePushEvent(payload as unknown as GitHubPushPayload);
-          break;
-        case 'pull_request':
-          console.log('Processing pull request event...');
-          await this.handlePullRequestEvent(payload as unknown as GitHubPullRequestPayload);
-          break;
-        default:
-          console.log(`⚠️ Unhandled event type: ${event}`);
+      case 'push':
+        console.log('Processing push event...');
+        await this.handlePushEvent(payload as unknown as GitHubPushPayload);
+        break;
+      case 'pull_request':
+        console.log('Processing pull request event...');
+        await this.handlePullRequestEvent(payload as unknown as GitHubPullRequestPayload);
+        break;
+      default:
+        console.log(`⚠️ Unhandled event type: ${event}`);
       }
     } catch (error) {
       console.error('Failed to handle webhook:', error);

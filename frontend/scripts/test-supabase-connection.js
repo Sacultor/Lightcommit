@@ -28,9 +28,9 @@ async function testSupabaseConnection() {
 
     // 直接使用Supabase客户端
     const { createClient } = require('@supabase/supabase-js');
-    
+
     console.log('📡 创建Supabase客户端...');
-    
+
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_ANON_KEY,
@@ -38,24 +38,24 @@ async function testSupabaseConnection() {
         auth: {
           autoRefreshToken: true,
           persistSession: true,
-          detectSessionInUrl: true
+          detectSessionInUrl: true,
         },
         db: {
-          schema: 'public'
-        }
-      }
+          schema: 'public',
+        },
+      },
     );
-    
+
     console.log('✅ Supabase客户端创建成功');
 
     // 测试基本连接 - 尝试获取数据库版本
     console.log('\n🔍 测试数据库连接...');
     try {
       const { data, error } = await supabase.rpc('version');
-      
+
       if (error) {
         console.log('❌ 版本查询失败:', error.message);
-        
+
         // 尝试另一种测试方法
         console.log('🔄 尝试备用连接测试...');
         const { data: testData, error: testError } = await supabase
@@ -63,7 +63,7 @@ async function testSupabaseConnection() {
           .select('table_name')
           .eq('table_schema', 'public')
           .limit(1);
-          
+
         if (testError) {
           console.log('❌ 备用测试也失败:', testError.message);
         } else {
@@ -101,7 +101,7 @@ async function testSupabaseConnection() {
     // 测试认证状态
     console.log('\n🔐 检查认证状态...');
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError) {
       console.log('ℹ️ 未认证用户 (这是正常的):', authError.message);
     } else {

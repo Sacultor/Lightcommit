@@ -84,8 +84,10 @@ describe("ERC-8004 System", function () {
       const repo = "Sacultor/Lightcommit";
       const commitSha = "abc123";
       const score = 85;
-      const timestamp = Math.floor(Date.now() / 1000);
       const nonce = 0;
+      
+      const currentBlock = await ethers.provider.getBlock('latest');
+      const timestamp = currentBlock!.timestamp;
       
       const feedbackData = {
         repo,
@@ -160,8 +162,10 @@ describe("ERC-8004 System", function () {
       const repo = "Sacultor/Lightcommit";
       const commitSha = "abc123";
       const score = 90;
-      const timestamp = Math.floor(Date.now() / 1000);
       const nonce = 0;
+      
+      const currentBlock = await ethers.provider.getBlock('latest');
+      const timestamp = currentBlock!.timestamp;
       
       const feedbackData = {
         repo,
@@ -229,8 +233,10 @@ describe("ERC-8004 System", function () {
       const repo = "Sacultor/Lightcommit";
       const commitSha = "abc123";
       const score = 70;
-      const timestamp = Math.floor(Date.now() / 1000);
       const nonce = 0;
+      
+      const currentBlock = await ethers.provider.getBlock('latest');
+      const timestamp = currentBlock!.timestamp;
       
       const feedbackData = {
         repo,
@@ -305,8 +311,10 @@ describe("ERC-8004 System", function () {
       const repo = "Sacultor/Lightcommit";
       const commitSha = "xyz789";
       const score = 95;
-      const timestamp = Math.floor(Date.now() / 1000);
       const nonce = 0;
+      
+      const currentBlock = await ethers.provider.getBlock('latest');
+      const timestamp = currentBlock!.timestamp;
       
       const feedbackData = {
         repo,

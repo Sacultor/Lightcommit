@@ -12,7 +12,7 @@ async function fixRLSPolicy() {
 
   try {
     const { createClient } = require('@supabase/supabase-js');
-    
+
     // 使用 service role key 来执行管理操作
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceRoleKey) {
@@ -23,7 +23,7 @@ async function fixRLSPolicy() {
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      serviceRoleKey
+      serviceRoleKey,
     );
 
     console.log('📡 使用 Service Role 连接到 Supabase...');
@@ -41,7 +41,7 @@ async function fixRLSPolicy() {
       if (statement.trim()) {
         console.log('🔄 执行:', statement.trim().substring(0, 50) + '...');
         const { error } = await supabase.rpc('exec_sql', { sql: statement.trim() });
-        
+
         if (error) {
           console.error('❌ 执行失败:', error);
         } else {
@@ -52,11 +52,11 @@ async function fixRLSPolicy() {
 
     // 测试修复后的插入操作
     console.log('\n🧪 测试修复后的插入操作...');
-    
+
     // 切换回普通客户端测试
     const normalClient = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
 
     const testUser = {
@@ -67,7 +67,7 @@ async function fixRLSPolicy() {
       avatarUrl: 'https://example.com/avatar.jpg',
       accessToken: null,
       walletAddress: null,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     const { data: insertData, error: insertError } = await normalClient
@@ -79,7 +79,7 @@ async function fixRLSPolicy() {
       console.log('\n💡 可能需要手动在 Supabase Dashboard 中执行 FIX_RLS_POLICY.sql');
     } else {
       console.log('✅ 测试插入成功！RLS 策略已修复');
-      
+
       // 清理测试数据
       await normalClient
         .from('users')

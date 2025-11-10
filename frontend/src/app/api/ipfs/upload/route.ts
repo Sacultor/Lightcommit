@@ -3,11 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const { content } = await request.json();
-    
+
     if (!content) {
       return NextResponse.json(
         { error: 'Content is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -63,16 +63,16 @@ export async function POST(request: NextRequest) {
     }
 
     const hash = Buffer.from(content).toString('base64').substring(0, 46);
-    return NextResponse.json({ 
+    return NextResponse.json({
       ipfsHash: `Qm${hash}`,
-      warning: 'Using mock IPFS hash. Configure PINATA_API_KEY or WEB3_STORAGE_TOKEN for real uploads.'
+      warning: 'Using mock IPFS hash. Configure PINATA_API_KEY or WEB3_STORAGE_TOKEN for real uploads.',
     });
 
   } catch (error) {
     console.error('IPFS upload error:', error);
     return NextResponse.json(
       { error: 'Failed to upload to IPFS' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

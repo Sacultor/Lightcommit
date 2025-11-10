@@ -8,26 +8,26 @@ export function AboutSection() {
         <div className="p-12 relative" style={{
           backgroundColor: '#F5F1E8',
         }}>
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            border: '8px solid black',
-            borderImage: 'url(/assets/border.png) 100 repeat',
-          }}
-        />
-        <h2 className="text-5xl md:text-6xl font-black text-black mb-6">
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              border: '8px solid black',
+              borderImage: 'url(/assets/border.png) 100 repeat',
+            }}
+          />
+          <h2 className="text-5xl md:text-6xl font-black text-black mb-6">
           关于我们
-        </h2>
+          </h2>
 
-        <p className="text-gray-700 max-w-md leading-relaxed mb-6">
+          <p className="text-gray-700 max-w-md leading-relaxed mb-6">
           LightCommit 是一个去中心化协议，将 GitHub 的提交、PR 与 Issue 等开源活动转化为链上可验证的 NFT 或 SBT。通过连接 Web2 协作与 Web3 激励，我们为开发者沉淀不可篡改的贡献凭证与可组合的链上声誉，并以费用回流金库形成自循环激励。
-        </p>
-        <ul className="text-gray-800 max-w-xl space-y-2 text-lg font-medium mb-12 list-disc list-inside">
-          <li>实时铸造：贡献发生即上链，分钟级凭证生成</li>
-          <li>智能抗女巫：多维度行为与质量验证识别真实贡献</li>
-          <li>零知识隐私：可选择性披露能力而不暴露账号</li>
-          <li>自循环经济：协议费用直接反哺贡献者与重要议题</li>
-        </ul>
+          </p>
+          <ul className="text-gray-800 max-w-xl space-y-2 text-lg font-medium mb-12 list-disc list-inside">
+            <li>实时铸造：贡献发生即上链，分钟级凭证生成</li>
+            <li>智能抗女巫：多维度行为与质量验证识别真实贡献</li>
+            <li>零知识隐私：可选择性披露能力而不暴露账号</li>
+            <li>自循环经济：协议费用直接反哺贡献者与重要议题</li>
+          </ul>
 
           {/* Avatar Row */}
           <div className="grid grid-cols-4 gap-0 mb-12" style={{ height: '400px' }}>

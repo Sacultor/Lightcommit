@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
         let additions = 0;
         let deletions = 0;
         let files: Array<{ filename: string; additions?: number; deletions?: number }> = [];
-        let merged = c.type === 'pull_request';
+        const merged = c.type === 'pull_request';
 
         // Try fetch commit details if commit sha is available in metadata
         const sha = (c.metadata as any)?.sha;
