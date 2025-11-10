@@ -18,9 +18,10 @@ export function HeaderSimple() {
   const navItems = [
     { label: 'HOME', href: '/' },
     { label: 'EXPLORE', href: '/explore' },
-    { label: 'ABOUT US', href: '/#about' },
+    { label: 'ABOUT', href: '/#about' },
     { label: 'ROADMAP', href: '/roadmap' },
     { label: 'GALLERY', href: '/collections' },
+    { label: 'CONTRIBUTIONS', href: '/erc8004/contributions' },
   ];
 
   const isActive = (href: string) => {
