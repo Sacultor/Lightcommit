@@ -36,12 +36,16 @@ export function useRainbowKitAdapter() {
     switchChain({ chainId: targetChainId });
   };
 
+  // 使用 address 作为更可靠的钱包连接判断，因为 isConnected 可能延迟更新
+  // 如果 address 存在，说明钱包已经连接
+  const walletConnected = isConnected || !!address;
+
   return {
     provider,
     signer,
     account: address || null,
     chainId,
-    isConnected,
+    isConnected: walletConnected, // 返回更可靠的连接状态
     isCorrectNetwork: chainId === parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '31337'),
     connect: connectWallet,
     disconnect,

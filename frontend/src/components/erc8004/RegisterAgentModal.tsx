@@ -18,7 +18,11 @@ export function RegisterAgentModal({ isOpen, onClose, onSuccess }: RegisterAgent
   const { registerAgent } = useAgentRegistry();
   const [registering, setRegistering] = useState(false);
 
-  const githubUsername = user?.githubUsername || 'unknown';
+  // 从 user_metadata 获取 GitHub 用户名
+  const githubUsername = (user as any)?.user_metadata?.user_name || 
+    (user as any)?.user_metadata?.preferred_username || 
+    (user as any)?.user_metadata?.login || 
+    'unknown';
 
   const handleRegister = async () => {
     setRegistering(true);

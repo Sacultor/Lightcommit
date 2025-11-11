@@ -76,13 +76,26 @@ export default function ERC8004ContributionsPage() {
   const loadReputation = async () => {
     if (!account) return;
 
+    // 检查环境变量是否配置
+    const reputationRegistryAddress = process.env.NEXT_PUBLIC_REPUTATION_REGISTRY_ADDRESS;
+    if (!reputationRegistryAddress) {
+      console.warn('REPUTATION_REGISTRY_ADDRESS 环境变量未配置');
+      return;
+    }
+
+    // 检查 window.ethereum 是否存在
+    if (!window.ethereum) {
+      console.warn('MetaMask 未安装或未检测到');
+      return;
+    }
+
     try {
       const { ethers } = await import('ethers');
       const { ReputationRegistryABI } = await import('@/lib/contracts');
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum as any);
       const contract = new ethers.Contract(
-        process.env.NEXT_PUBLIC_REPUTATION_REGISTRY_ADDRESS!,
+        reputationRegistryAddress,
         ReputationRegistryABI,
         provider,
       );
