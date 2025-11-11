@@ -19,8 +19,6 @@
     "redeploy:zksync": "hardhat run scripts/redeploy.ts --network ZKsyncEraSepolia",
     "check-balance": "hardhat run scripts/check-balance.ts",
     "check-balance:sepolia": "hardhat run scripts/check-balance.ts --network sepolia",
-    "test-rpc": "hardhat run scripts/test-rpc-connection.ts",
-    "test-rpc:sepolia": "hardhat run scripts/test-rpc-connection.ts --network sepolia",
     "deploy-zksync": "hardhat run ./scripts/deploy.ts",
     "deploy-erc20": "hardhat run ./scripts/deploy-erc20.ts",
     "deploy-nft": "hardhat run ./scripts/deploy-nft.ts",
