@@ -10,6 +10,17 @@
     "deploy": "hardhat ignition deploy ignition/modules/Counter.ts",
     "deploy:commit": "hardhat ignition deploy ignition/modules/CommitNFT.ts",
     "deploy:sepolia": "hardhat ignition deploy ignition/modules/CommitNFT.ts --network sepolia",
+    "deploy:erc8004": "hardhat ignition deploy ignition/modules/ERC8004System.ts",
+    "deploy:erc8004:sepolia": "hardhat ignition deploy ignition/modules/ERC8004System.ts --network sepolia",
+    "deploy:erc8004:zksync": "hardhat ignition deploy ignition/modules/ERC8004System.ts --network ZKsyncEraSepolia",
+    "redeploy": "hardhat run scripts/redeploy.ts",
+    "redeploy:sepolia": "hardhat run scripts/redeploy.ts --network sepolia",
+    "redeploy:localhost": "hardhat run scripts/redeploy.ts --network localhost",
+    "redeploy:zksync": "hardhat run scripts/redeploy.ts --network ZKsyncEraSepolia",
+    "check-balance": "hardhat run scripts/check-balance.ts",
+    "check-balance:sepolia": "hardhat run scripts/check-balance.ts --network sepolia",
+    "test-rpc": "hardhat run scripts/test-rpc-connection.ts",
+    "test-rpc:sepolia": "hardhat run scripts/test-rpc-connection.ts --network sepolia",
     "deploy-zksync": "hardhat run ./scripts/deploy.ts",
     "deploy-erc20": "hardhat run ./scripts/deploy-erc20.ts",
     "deploy-nft": "hardhat run ./scripts/deploy-nft.ts",
@@ -30,7 +41,7 @@
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.13",
-    "@openzeppelin/contracts": "^5.3.0",
+    "@openzeppelin/contracts": "^4.9.5",
     "@types/chai": "^5.2.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.18.10",
@@ -46,7 +57,6 @@
     "zksync-ethers": "^6.17.0"
   },
   "dependencies": {
-    "@nomicfoundation/hardhat-network-helpers": "^3.0.1",
-    "@openzeppelin/contracts": "4.9.6"
+    "@nomicfoundation/hardhat-network-helpers": "^3.0.1"
   }
 }

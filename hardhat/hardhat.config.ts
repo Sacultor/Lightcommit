@@ -37,6 +37,8 @@ const config: HardhatUserConfig = {
       accounts: process.env.SEPOLIA_PRIVATE_KEY
         ? [process.env.SEPOLIA_PRIVATE_KEY]
         : [],
+      timeout: 120000, // 120 秒超时
+      httpHeaders: {},
     },
     ZKsyncEraSepolia: {
       url: "https://sepolia.era.zksync.dev",
