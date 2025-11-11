@@ -1,14 +1,5 @@
-# LightCommit - ETHShanghai 2025
+# LightCommit - A Trustless-Agent-Based Decentralized Developer Incentive Engine on Blockchain
 
-## 一、提交物清单 (Deliverables)
-
-- [ ] GitHub 仓库（公开或临时私有）：包含完整代码与本 README
-- [ ] Demo 视频（≤ 3 分钟，中文）：展示核心功能与流程
-- [ ] 在线演示链接（如有）：前端 Demo 或后端 API 文档
-- [ ] 合约部署信息（如有）：网络、地址、验证链接、最小复现脚本
-- [ ] 可选材料：Pitch Deck（不计入评分权重）
-
-## 二、参赛队伍填写区 (Fill-in Template)
 
 ### 1) 项目概述 (Overview)
 
@@ -147,22 +138,14 @@ cd frontend && pnpm dev
 
 ### 8) 团队与联系 (Team & Contacts)
 
-- **团队名**：LightCommit Team
+- **团队名**：LightCommit Group
 - **成员与分工**：
   - Frederick - 前端 
   - 散修Sacultor - 后端 
   - 燕耳Firenze - 合约 
   - 冷酷小猫 - 全栈 
-- **联系方式（Email/TG/X）**：2313072@mail.nankai.edu.cn
-- **可演示时段（时区）**：下午均可
+- **联系方式（Email/TG/X）**：sacultorlee@gmail.com
 
-## 三、快速自检清单 (Submission Checklist)
 
-- [ ] README 按模板填写完整（概述、架构、复现、Demo、边界）
-- [ ] 本地可一键运行，关键用例可复现
-- [ ] （如有）测试网合约地址与验证链接已提供
-- [ ] Demo 视频（≤ 3 分钟，中文）链接可访问
-- [ ] 如未完全开源，已在"可验证边界"清晰说明
-- [ ] 联系方式与可演示时段已填写
 
 
