@@ -154,7 +154,7 @@ async function main() {
   console.log("\n" + "=".repeat(50));
   console.log("📝 前端环境变量配置：");
   console.log("=".repeat(50));
-  console.log("\n请将以下内容添加到 frontend/.env.local 文件：\n");
+  console.log("\n请将以下内容添加到 frontend/.env 文件：\n");
   console.log(`NEXT_PUBLIC_CHAIN_ID=${chainId}`);
   console.log(`NEXT_PUBLIC_IDENTITY_REGISTRY_ADDRESS=${identityAddress}`);
   console.log(`NEXT_PUBLIC_REPUTATION_REGISTRY_ADDRESS=${reputationAddress}`);

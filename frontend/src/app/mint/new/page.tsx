@@ -1,7 +1,42 @@
+/**
+ * 直接铸造 NFT 页面（旧流程）
+ * 
+ * 路由：/mint/new
+ * 功能：直接铸造 Commit NFT（不经过 ERC-8004 评分流程）
+ * 
+ * ⚠️ 状态：已弃用
+ * - 此页面是旧的直接铸造流程
+ * - 新流程应该使用 /erc8004/validate/[id]（经过评分和验证）
+ * - 仅被 /explore 页面引用（建议改为 ERC-8004 流程）
+ * 
+ * 页面流程：
+ * 步骤 1 - 配置 NFT 元数据：
+ *   - 输入 NFT 标题
+ *   - 输入描述
+ * 
+ * 步骤 2 - 预览和选择网络：
+ *   - 显示钱包连接状态
+ *   - 选择区块链网络
+ *   - 预览 NFT 卡片
+ *   - 点击铸造按钮
+ * 
+ * 步骤 3 - 铸造成功：
+ *   - 显示成功动画
+ *   - 显示 Token ID 和交易哈希
+ *   - 提供跳转到收藏页的按钮
+ * 
+ * 与 ERC-8004 流程的区别：
+ * - 旧流程：直接铸造，无评分，无验证
+ * - 新流程：评分 → 签名 → 验证 → 铸造
+ * 
+ * 建议：
+ * - 删除此页面，统一使用 ERC-8004 流程
+ * - 或保留作为"快速铸造"功能（无需评分）
+ */
 'use client';
 
-import { HeaderSimple } from '@/components/header-simple';
-import { FooterSimple } from '@/components/footer-simple';
+import { HeaderSimple } from '@/components/layout/header';
+import { FooterSimple } from '@/components/layout/footer';
 import { motion } from 'framer-motion';
 import { ChevronDown, Check, Wallet as WalletIcon } from 'lucide-react';
 import { useState, Suspense } from 'react';
@@ -12,26 +47,31 @@ import { ContractService } from '@/lib/services/contract.service';
 import toast from 'react-hot-toast';
 
 function NewMintPageContent() {
+  // 路由参数和导航
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Web3 hooks
+  // Web3 相关状态
   const { account, isConnected, chainId, connect } = useWeb3();
-  const contract = useContract();
+  const contract = useContract();  // CommitNFT 合约实例
 
-  const initialStep = parseInt(searchParams.get('step') || '1');
-  const [currentStep, setCurrentStep] = useState(initialStep);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [selectedNetwork, setSelectedNetwork] = useState('Choose Network');
-  const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);
-  const [isMinting, setIsMinting] = useState(false);
-  const [mintingProgress, setMintingProgress] = useState(0);
+  // 页面状态
+  const initialStep = parseInt(searchParams.get('step') || '1');  // 从 URL 参数读取初始步骤
+  const [currentStep, setCurrentStep] = useState(initialStep);     // 当前步骤（1/2/3）
+  const [title, setTitle] = useState('');                          // NFT 标题
+  const [description, setDescription] = useState('');              // NFT 描述
+  const [selectedNetwork, setSelectedNetwork] = useState('Choose Network');  // 选择的网络
+  const [showNetworkDropdown, setShowNetworkDropdown] = useState(false);     // 是否显示网络下拉菜单
+  const [isMinting, setIsMinting] = useState(false);               // 是否正在铸造
+  const [mintingProgress, setMintingProgress] = useState(0);       // 铸造进度（0-100）
 
   // 交易结果状态
-  const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
-  const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);       // 铸造的 Token ID
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);   // 交易哈希
 
+  /**
+   * 支持的区块链网络列表
+   */
   const networks = [
     {
       name: 'Ethereum Mainnet',
@@ -65,6 +105,13 @@ function NewMintPageContent() {
     },
   ];
 
+  /**
+   * 获取网络图标（Ethereum 或 Polygon）
+   * 
+   * @param iconType - 图标类型（ethereum/polygon）
+   * @param _color - 颜色（未使用）
+   * @returns SVG 图标元素
+   */
   const getNetworkIcon = (iconType: string, _color: string) => {
     if (iconType === 'ethereum') {
       return (
@@ -83,8 +130,27 @@ function NewMintPageContent() {
 
   const selectedNetworkData = networks.find(n => n.name === selectedNetwork);
 
+  /**
+   * 直接铸造 NFT（核心函数）
+   * 
+   * 合约调用：CommitNFT.mintCommit(to, commitData, metadataURI)
+   * 
+   * 流程：
+   * 1. 检查钱包连接和合约实例
+   * 2. 验证输入（标题必填）
+   * 3. 构造 CommitData 数据结构
+   * 4. 调用 ContractService.mintCommit() 铸造 NFT
+   * 5. 等待交易确认
+   * 6. 保存 Token ID 和交易哈希
+   * 7. 跳转到成功页面
+   * 
+   * 注意：
+   * - 这是直接铸造，不经过 ERC-8004 评分流程
+   * - 使用 Mock 数据（repo、commit、代码量等）
+   * - 不推荐在生产环境使用
+   */
   const handleMint = async () => {
-    // 检查钱包连接
+    // 1. 检查钱包连接
     if (!isConnected || !account) {
       toast.error('请先连接钱包');
       try {
@@ -95,61 +161,64 @@ function NewMintPageContent() {
       return;
     }
 
-    // 检查合约实例
+    // 2. 检查合约实例是否初始化
     if (!contract) {
       toast.error('合约未初始化，请检查配置');
       return;
     }
 
-    // 验证输入
+    // 3. 验证输入（标题必填）
     if (!title.trim()) {
       toast.error('请输入 NFT 标题');
       return;
     }
 
+    // 4. 开始铸造流程
     setIsMinting(true);
     setMintingProgress(10);
 
     try {
+      // 5. 创建 ContractService 实例
       const service = new ContractService(contract);
 
-      // 构造 CommitData
+      // 6. 构造 CommitData（使用 Mock 数据）
       const commitData = {
-        repo: 'lightcommit/demo',
-        commit: `commit-${Date.now()}`,
-        linesAdded: 100,
-        linesDeleted: 50,
-        testsPass: true,
-        timestamp: Math.floor(Date.now() / 1000),
-        author: account,
-        message: title,
-        merged: true,
+        repo: 'lightcommit/demo',              // Mock 仓库名
+        commit: `commit-${Date.now()}`,        // Mock commit hash
+        linesAdded: 100,                       // Mock 新增行数
+        linesDeleted: 50,                      // Mock 删除行数
+        testsPass: true,                       // Mock 测试通过
+        timestamp: Math.floor(Date.now() / 1000),  // 当前时间戳
+        author: account,                       // 用户地址
+        message: title,                        // 用户输入的标题
+        merged: true,                          // Mock 已合并
       };
 
       setMintingProgress(30);
       toast.loading('正在准备交易...', { id: 'minting' });
 
-      // 调用真实的合约铸造
+      // 7. 调用真实的合约铸造方法
       const result = await service.mintCommit(
-        account,
-        commitData,
-        `https://api.lightcommit.com/metadata/${Date.now()}`,
+        account,                               // 接收地址
+        commitData,                            // Commit 数据
+        `https://api.lightcommit.com/metadata/${Date.now()}`,  // Mock 元数据 URI
       );
 
       setMintingProgress(60);
 
+      // 8. 检查铸造结果
       if (result.success) {
         setMintingProgress(90);
         toast.dismiss('minting');
         toast.success('NFT 铸造成功！');
 
-        // 保存铸造结果
+        // 9. 保存铸造结果
         setMintedTokenId(result.tokenId || null);
         setTransactionHash(result.transactionHash || null);
 
         setMintingProgress(100);
 
-        // 延迟跳转到成功页面
+        // 10. 延迟跳转到成功页面（步骤 3）
         setTimeout(() => {
           setIsMinting(false);
           setCurrentStep(3);
@@ -158,10 +227,11 @@ function NewMintPageContent() {
         throw new Error(result.error || '铸造失败');
       }
     } catch (error: any) {
+      // 11. 错误处理
       console.error('Mint error:', error);
       toast.dismiss('minting');
 
-      // 区分不同类型的错误
+      // 区分不同类型的错误，提供友好的错误提示
       if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
         // 用户拒绝了交易
         toast('交易已取消', {
@@ -185,6 +255,9 @@ function NewMintPageContent() {
     }
   };
 
+  /**
+   * 步骤配置
+   */
   const steps = [
     { number: 1, title: 'Configure NFT', active: true },
     { number: 2, title: 'Preview & Network', active: false },
@@ -193,23 +266,28 @@ function NewMintPageContent() {
 
   return (
     <div className="min-h-screen bg-[#F5F1E8]">
+      {/* 页面头部导航栏 */}
       <HeaderSimple />
+      
+      {/* 主内容区域 */}
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-6 max-w-7xl">
+          {/* 整体容器动画（淡入 + 上移） */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {/* 步骤导航栏 */}
             <div className="flex gap-4 mb-12 justify-center flex-wrap">
               {steps.map((step) => (
                 <button
                   key={step.number}
-                  onClick={() => setCurrentStep(step.number)}
+                  onClick={() => setCurrentStep(step.number)}  // 可以随意切换步骤
                   className={`px-6 py-3 rounded-2xl font-bold text-base border-3 transition-all ${
                     currentStep === step.number
-                      ? 'bg-black text-white border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'
-                      : 'bg-white text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]'
+                      ? 'bg-black text-white border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]'  // 当前步骤：黑色
+                      : 'bg-white text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.5)]'  // 其他步骤：白色
                   }`}
                 >
                   {step.number}.{step.title}
@@ -217,6 +295,7 @@ function NewMintPageContent() {
               ))}
             </div>
 
+            {/* 步骤 1：配置 NFT 元数据 */}
             {currentStep === 1 && (
               <div className="max-w-2xl mx-auto">
                 <h2 className="text-4xl font-black text-black mb-8">
@@ -224,6 +303,7 @@ function NewMintPageContent() {
                 </h2>
 
                 <div className="space-y-6">
+                  {/* 标题输入 */}
                   <div>
                     <label className="block text-xl font-black text-black mb-3">
                       NFT Title
@@ -240,12 +320,15 @@ function NewMintPageContent() {
                     />
                   </div>
 
+                  {/* 描述输入 */}
                   <div>
                     <label className="block text-xl font-black text-black mb-3">
                       Description
                     </label>
                     <div className="relative">
+                      {/* 装饰图标 */}
                       <div className="absolute left-4 top-4 w-12 h-12 bg-gray-200 rounded-lg border-2 border-gray-300" />
+                      {/* 文本区域 */}
                       <textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
@@ -259,6 +342,7 @@ function NewMintPageContent() {
                     </div>
                   </div>
 
+                  {/* 下一步按钮 */}
                   <div className="flex justify-end mt-8">
                     <button
                       onClick={() => setCurrentStep(2)}

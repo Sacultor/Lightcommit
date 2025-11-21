@@ -144,7 +144,7 @@ npx hardhat run scripts/deploy-erc8004.ts --network localhost
 
 ### 1. 更新前端环境变量
 
-编辑 `frontend/.env.local` 文件：
+编辑 `frontend/.env` 文件：
 
 ```env
 # 区块链网络配置

@@ -134,7 +134,7 @@ npx hardhat run scripts/deploy-erc8004.ts --network sepolia
 ### 4. 更新配置文件
 将部署后的合约地址更新到：
 - `hardhat/contracts-config.json`
-- `frontend/.env.local`
+- `frontend/.env`
 
 ## 前端集成示例
 

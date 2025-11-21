@@ -9,7 +9,11 @@
     "lint": "eslint",
     "test:ipfs": "node scripts/test-ipfs-config.js",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test:webhook": "node scripts/test-webhook.js",
+    "test:webhook:pr": "node scripts/test-webhook.js pull_request",
+    "test:verify-data": "node scripts/verify-webhook-data.js",
+    "test:api": "node scripts/test-frontend-api.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",

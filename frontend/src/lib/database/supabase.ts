@@ -1,232 +1,189 @@
-import { supabase } from '../supabase/client';
+/**
+ * Supabase 服务封装
+ * 
+ * 功能：
+ * - 提供 Supabase 客户端实例
+ * - 封装查询和健康检查方法
+ * - 支持原始 SQL 查询
+ * 
+ * 使用场景：
+ * - database/index.ts 使用此服务执行查询
+ * - 提供统一的数据库访问接口
+ */
+
+import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
- * Supabase数据库服务类
- * 提供统一的数据库操作接口
+ * Supabase 服务类
  */
-export class SupabaseService {
+class SupabaseService {
   private client: SupabaseClient;
 
   constructor() {
-    this.client = supabase;
+    // 获取 Supabase 配置
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+    if (!url || !anonKey) {
+      console.warn('⚠️ Supabase 配置缺失，某些功能可能无法使用');
+    }
+
+    // 创建 Supabase 客户端
+    this.client = createClient(url, anonKey);
   }
 
   /**
-   * 获取Supabase客户端
+   * 获取 Supabase 客户端
    */
   getClient(): SupabaseClient {
     return this.client;
   }
 
   /**
-   * 执行原始SQL查询
-   * @param query SQL查询语句
-   * @param params 查询参数
-   *
-   * 注意：这需要在 Supabase 中创建 execute_sql RPC 函数
-   * 创建方法：
-   * CREATE OR REPLACE FUNCTION execute_sql(query text, params jsonb DEFAULT '[]'::jsonb)
-   * RETURNS jsonb
-   * LANGUAGE plpgsql
-   * SECURITY DEFINER
-   * AS $$
-   * DECLARE
-   *   result jsonb;
-   * BEGIN
-   *   EXECUTE query INTO result USING params;
-   *   RETURN result;
-   * END;
-   * $$;
+   * 执行原始 SQL 查询
+   * 
+   * 注意：Supabase 使用 rpc 函数执行原始 SQL
+   * 需要在数据库中创建相应的 RPC 函数
+   * 
+   * @param text - SQL 查询语句
+   * @param params - 查询参数
    */
-  async query(query: string, params?: any[]): Promise<any> {
+  async query(text: string, params?: unknown[]): Promise<any> {
+    // 提取 SQL 命令类型
+    const command = text.trim().split(' ')[0].toUpperCase();
+
     try {
-      // 使用 Supabase RPC 执行原始 SQL
-      const { data, error } = await this.client.rpc('execute_sql', {
-        query,
+      // 根据命令类型执行不同的操作
+      if (command === 'SELECT') {
+        // SELECT 查询：解析表名和条件
+        return await this.executeSelect(text, params);
+      } else if (command === 'INSERT') {
+        return await this.executeInsert(text, params);
+      } else if (command === 'UPDATE') {
+        return await this.executeUpdate(text, params);
+      } else if (command === 'DELETE') {
+        return await this.executeDelete(text, params);
+      } else {
+        // 其他 SQL 命令使用 RPC（需要数据库支持）
+        return await this.executeRpc(text, params);
+      }
+    } catch (error) {
+      console.error('Supabase query error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 执行 SELECT 查询
+   */
+  private async executeSelect(text: string, _params?: unknown[]): Promise<any> {
+    // 简单实现：使用 Supabase 查询构建器
+    // 实际项目中可能需要更复杂的 SQL 解析
+    
+    // 提取表名（简化版本）
+    const match = text.match(/FROM\s+(\w+)/i);
+    const tableName = match ? match[1] : '';
+
+    if (!tableName) {
+      throw new Error('无法解析表名');
+    }
+
+    // 执行查询
+    const { data, error } = await this.client
+      .from(tableName)
+      .select('*');
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * 执行 INSERT 查询
+   */
+  private async executeInsert(_text: string, _params?: unknown[]): Promise<any> {
+    // 简化实现
+    throw new Error('请使用 Supabase 客户端的 insert() 方法');
+  }
+
+  /**
+   * 执行 UPDATE 查询
+   */
+  private async executeUpdate(_text: string, _params?: unknown[]): Promise<any> {
+    // 简化实现
+    throw new Error('请使用 Supabase 客户端的 update() 方法');
+  }
+
+  /**
+   * 执行 DELETE 查询
+   */
+  private async executeDelete(_text: string, _params?: unknown[]): Promise<any> {
+    // 简化实现
+    throw new Error('请使用 Supabase 客户端的 delete() 方法');
+  }
+
+  /**
+   * 通过 RPC 执行原始 SQL
+   * 
+   * 需要在数据库中创建 execute_sql 函数
+   */
+  private async executeRpc(text: string, params?: unknown[]): Promise<any> {
+    const { data, error } = await this.client
+      .rpc('execute_sql', {
+        query: text,
         params: params || [],
       });
 
-      if (error) {
-        console.error('SQL查询错误:', error);
-        throw new Error(`SQL查询失败: ${error.message}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('执行SQL查询时出错:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 从表中选择数据
-   * @param table 表名
-   * @param columns 要选择的列
-   * @param conditions 查询条件
-   */
-  async select(table: string, columns = '*', conditions?: Record<string, any>) {
-    try {
-      let query = this.client.from(table).select(columns);
-
-      if (conditions) {
-        Object.entries(conditions).forEach(([key, value]) => {
-          query = query.eq(key, value);
-        });
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        throw new Error(`查询失败: ${error.message}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('执行SELECT查询时出错:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 插入数据
-   * @param table 表名
-   * @param data 要插入的数据
-   */
-  async insert(table: string, data: Record<string, any> | Record<string, any>[]) {
-    try {
-      const { data: result, error } = await this.client
-        .from(table)
-        .insert(data)
-        .select();
-
-      if (error) {
-        throw new Error(`插入失败: ${error.message}`);
-      }
-
-      return result;
-    } catch (error) {
-      console.error('执行INSERT操作时出错:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 更新数据
-   * @param table 表名
-   * @param data 要更新的数据
-   * @param conditions 更新条件
-   */
-  async update(table: string, data: Record<string, any>, conditions: Record<string, any>) {
-    try {
-      let query = this.client.from(table).update(data);
-
-      Object.entries(conditions).forEach(([key, value]) => {
-        query = query.eq(key, value);
-      });
-
-      const { data: result, error } = await query.select();
-
-      if (error) {
-        throw new Error(`更新失败: ${error.message}`);
-      }
-
-      return result;
-    } catch (error) {
-      console.error('执行UPDATE操作时出错:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 删除数据
-   * @param table 表名
-   * @param conditions 删除条件
-   */
-  async delete(table: string, conditions: Record<string, any>) {
-    try {
-      let query = this.client.from(table).delete();
-
-      Object.entries(conditions).forEach(([key, value]) => {
-        query = query.eq(key, value);
-      });
-
-      const { data, error } = await query.select();
-
-      if (error) {
-        throw new Error(`删除失败: ${error.message}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error('执行DELETE操作时出错:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * 测试数据库连接
-   */
-  async testConnection(): Promise<boolean> {
-    try {
-      const { error } = await this.client.auth.getSession();
-      return !error;
-    } catch {
-      return false;
-    }
+    if (error) throw error;
+    return data;
   }
 
   /**
    * 健康检查
    */
-  async healthCheck() {
+  async healthCheck(): Promise<{ status: 'healthy' | 'unhealthy'; error?: string }> {
     try {
-      const { error } = await this.client.auth.getSession();
-      return {
-        status: error ? 'unhealthy' : 'healthy',
-        error: error?.message,
-      };
-    } catch (err) {
+      // 尝试执行一个简单的查询
+      const { error } = await this.client
+        .from('users')
+        .select('id')
+        .limit(1);
+
+      if (error) {
+        return {
+          status: 'unhealthy',
+          error: error.message,
+        };
+      }
+
+      return { status: 'healthy' };
+    } catch (error) {
       return {
         status: 'unhealthy',
-        error: err instanceof Error ? err.message : 'Unknown error',
+        error: error instanceof Error ? error.message : String(error),
       };
-    }
-  }
-
-  /**
-   * 开始事务（Supabase不直接支持事务，但可以使用RPC函数）
-   */
-  async transaction(callback: (client: SupabaseClient) => Promise<any>) {
-    try {
-      // Supabase不直接支持事务，这里提供客户端给回调函数
-      // 实际的事务逻辑需要在数据库层面通过存储过程实现
-      return await callback(this.client);
-    } catch (error) {
-      console.error('事务执行失败:', error);
-      throw error;
     }
   }
 }
 
-// 创建单例实例
+// 单例实例
 let supabaseServiceInstance: SupabaseService | null = null;
 
 /**
- * 获取Supabase服务实例
+ * 获取 Supabase 服务实例（单例模式）
  */
-export const getSupabaseService = (): SupabaseService => {
+export function getSupabaseService(): SupabaseService {
   if (!supabaseServiceInstance) {
     supabaseServiceInstance = new SupabaseService();
   }
   return supabaseServiceInstance;
-};
+}
 
 /**
- * 获取Supabase客户端（快捷方式）
+ * 获取 Supabase 客户端（直接访问）
  */
-export const getSupabaseDB = () => {
+export function getSupabaseClient(): SupabaseClient {
   return getSupabaseService().getClient();
-};
+}
 
-export default SupabaseService;
+

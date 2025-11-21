@@ -82,7 +82,7 @@ pnpm -C hardhat node
 ```
 
 - **必要环境变量（示例，按本地/测试网选择）**
-  - 前端 `.env.local`
+  - 前端 `.env`
     - `RPC_URL`：本地或测试网节点
     - `AGENT_ADDRESS`：已部署 `TrustlessAgent` 地址
     - `AI_ENDPOINT`：评分服务地址（本地可为 `/api/score`）
@@ -95,7 +95,7 @@ pnpm -C hardhat node
 
 - **本地演示流程（建议）**
   1. 启动本地链并部署合约，记录地址
-  2. 在前端 `.env.local` 写入 `RPC_URL` 与 `AGENT_ADDRESS`
+  2. 在前端 `.env` 写入 `RPC_URL` 与 `AGENT_ADDRESS`
   3. 启动前端 `pnpm dev`
   4. 通过 `api/github/webhook` 的本地脚本模拟一次 push 事件
   5. 在 Mint 流程的 Step2 观察交易进度并进入 Step3 完成

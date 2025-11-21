@@ -51,10 +51,10 @@ npx hardhat run scripts/deploy-erc8004.ts --network localhost
 ### 4. 配置前端
 ```bash
 cd frontend
-cp .env.erc8004.example .env.local
+cp .env.erc8004.example .env
 ```
 
-编辑 `.env.local`，填入部署的合约地址。
+编辑 `.env`，填入部署的合约地址。
 
 ### 5. 启动前端
 ```bash

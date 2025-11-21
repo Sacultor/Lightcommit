@@ -1,157 +1,165 @@
-import { supabase } from '@/lib/supabase/client';
-import { createClient } from '@/lib/supabase/server';
-import type { User, Session } from '@supabase/supabase-js';
+/**
+ * 认证服务（基于 JWT Session，无 Supabase）
+ * 
+ * 功能：
+ * - 提供前端调用的认证相关方法
+ * - 与 /api/auth/* 路由配合使用
+ * - 支持 GitHub OAuth 登录
+ * 
+ * 注意：
+ * - 所有方法都是调用内部 API，不直接操作 session
+ * - Session 管理由服务端 JWT 完成
+ */
+
+import type { SessionData } from '@/lib/auth/session';
 
 export class AuthService {
   /**
    * 使用 GitHub OAuth 登录
+   * 
+   * 前端调用此方法会重定向到 /api/auth/github
+   * 然后跳转到 GitHub 授权页面
    */
-  static async signInWithGitHub(redirectTo?: string) {
-    const baseUrl = redirectTo ||
-      (typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_FRONTEND_URL || 'http://localhost:3000');
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'github',
-      options: {
-        redirectTo: `${baseUrl}/auth/callback`,
-        scopes: 'user:email read:user',
-      },
-    });
-
-    if (error) {
-      console.error('GitHub OAuth 初始化失败:', error);
-      throw error;
+  static async signInWithGitHub(_redirectTo?: string) {
+    // 直接重定向到 GitHub OAuth 接口
+    const url = '/api/auth/github';
+    if (typeof window !== 'undefined') {
+      window.location.href = url;
     }
-
-    return data;
+    return { url };
   }
 
   /**
    * 登出
+   * 
+   * 调用 /api/auth/logout 清除 JWT session
    */
   static async signOut() {
-    const { error } = await supabase.auth.signOut();
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+    });
 
-    if (error) {
-      console.error('登出失败:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error('登出失败');
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * 获取当前用户 session（客户端）
+   * 
+   * 调用 /api/auth/user 获取 JWT session
+   */
+  static async getSession(): Promise<{ session: SessionData | null; error: any }> {
+    try {
+      const response = await fetch('/api/auth/user', {
+        credentials: 'include', // 确保发送 cookies
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // 未登录
+          return { session: null, error: null };
+        }
+        throw new Error('获取 session 失败');
+      }
+
+      const data = await response.json();
+      return { session: data.session, error: null };
+    } catch (error) {
+      return { session: null, error };
     }
   }
 
   /**
-   * 获取当前用户 session (客户端)
+   * 获取当前用户信息（客户端）
+   * 
+   * 从 session 中提取 user 字段
    */
-  static async getSession(): Promise<{ session: Session | null; error: any }> {
-    const { data, error } = await supabase.auth.getSession();
-    return { session: data.session, error };
+  static async getUser(): Promise<{ user: SessionData['user'] | null; error: any }> {
+    const { session, error } = await this.getSession();
+
+    if (error) {
+      return { user: null, error };
+    }
+
+    if (!session) {
+      return { user: null, error: null };
+    }
+
+    return { user: session.user, error: null };
   }
 
   /**
-   * 获取当前用户信息 (客户端)
+   * 获取当前用户 session（服务端）
+   * 
+   * 注意：服务端应该直接使用 getSession() from '@/lib/auth/session'
+   * 此方法仅用于兼容旧代码
    */
-  static async getUser(): Promise<{ user: User | null; error: any }> {
-    const { data, error } = await supabase.auth.getUser();
-    return { user: data.user, error };
+  static async getServerSession(): Promise<{ session: SessionData | null; error: any }> {
+    // 服务端应该直接使用 getSession()
+    // 此方法不应该在服务端被调用
+    console.warn('⚠️ getServerSession() 不应在服务端被调用，请直接使用 getSession() from "@/lib/auth/session"');
+    return { session: null, error: new Error('Use getSession() from @/lib/auth/session instead') };
   }
 
   /**
-   * 获取当前用户 session (服务端)
+   * 获取当前用户信息（服务端）
+   * 
+   * 注意：服务端应该直接使用 getSession() from '@/lib/auth/session'
+   * 此方法仅用于兼容旧代码
    */
-  static async getServerSession(): Promise<{ session: Session | null; error: any }> {
-    const supabaseServer = createClient();
-    const { data, error } = await supabaseServer.auth.getSession();
-    return { session: data.session, error };
-  }
-
-  /**
-   * 获取当前用户信息 (服务端)
-   */
-  static async getServerUser(): Promise<{ user: User | null; error: any }> {
-    const supabaseServer = createClient();
-    const { data, error } = await supabaseServer.auth.getUser();
-    return { user: data.user, error };
+  static async getServerUser(): Promise<{ user: SessionData['user'] | null; error: any }> {
+    // 服务端应该直接使用 getSession()
+    // 此方法不应该在服务端被调用
+    console.warn('⚠️ getServerUser() 不应在服务端被调用，请直接使用 getSession() from "@/lib/auth/session"');
+    return { user: null, error: new Error('Use getSession() from @/lib/auth/session instead') };
   }
 
   /**
    * 监听认证状态变化
+   * 
+   * 注意：JWT session 不支持实时监听
+   * 可以使用轮询或 SSE 实现类似功能
    */
-  static onAuthStateChange(callback: (event: string, session: Session | null) => void) {
-    return supabase.auth.onAuthStateChange(callback);
+  static onAuthStateChange(_callback: (event: string, session: SessionData | null) => void) {
+    console.warn('⚠️ JWT session 不支持实时监听，请使用轮询或其他方式');
+    return {
+      data: { subscription: null },
+      unsubscribe: () => {},
+    };
   }
 
   /**
-   * 同步用户信息到应用数据库
+   * 同步用户信息到数据库
+   * 
+   * @param user - GitHub 用户信息
    */
-  static async syncUserToDatabase(user: User) {
+  static async syncUserToDatabase(user: SessionData['user']) {
     try {
-      console.log('🔄 开始同步用户信息:', {
-        userId: user.id,
-        email: user.email,
-        metadata: user.user_metadata,
+      const response = await fetch('/api/users/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          githubId: user.id,
+          username: user.login,
+          name: user.name,
+          email: user.email,
+          avatarUrl: user.avatar_url,
+        }),
       });
 
-      // 准备要插入的数据
-      const userData = {
-        id: user.id,
-        email: user.email,
-        githubId: user.user_metadata?.user_name || user.user_metadata?.preferred_username || user.user_metadata?.login,
-        username: user.user_metadata?.user_name || user.user_metadata?.preferred_username || user.user_metadata?.login,
-        avatarUrl: user.user_metadata?.avatar_url,
-        accessToken: null, // 不存储访问令牌
-        walletAddress: null,
-        updatedAt: new Date().toISOString(),
-      };
-
-      console.log('📝 准备插入的用户数据:', userData);
-
-      // 首先检查表是否存在
-      const { error: tableError } = await supabase
-        .from('users')
-        .select('id')
-        .limit(1);
-
-      if (tableError) {
-        console.error('❌ 检查 users 表时出错:', tableError);
-        console.log('💡 可能的原因：');
-        console.log('   1. users 表不存在');
-        console.log('   2. 没有访问权限');
-        console.log('   3. RLS (Row Level Security) 策略阻止了访问');
-        return; // 不抛出错误，避免阻止登录
+      if (!response.ok) {
+        throw new Error(`Failed to sync user: ${response.statusText}`);
       }
 
-      console.log('✅ users 表检查通过');
-
-      const { data, error } = await supabase
-        .from('users')
-        .upsert(userData, {
-          onConflict: 'id',
-        });
-
-      if (error) {
-        console.error('同步用户信息失败:', error);
-        console.error('错误详情:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-        });
-
-        // 尝试简单的插入而不是 upsert
-        console.log('🔄 尝试简单插入...');
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert(userData);
-
-        if (insertError) {
-          console.error('插入也失败:', insertError);
-          return; // 不抛出错误，避免阻止登录
-        }
-      }
-
-      console.log('✅ 用户信息同步成功', data);
+      return await response.json();
     } catch (error) {
-      console.error('❌ 同步用户信息到数据库失败:', error);
-      // 不抛出错误，避免阻止登录流程
+      console.error('用户信息同步失败:', error);
+      throw error;
     }
   }
 }

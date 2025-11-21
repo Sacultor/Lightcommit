@@ -1,7 +1,7 @@
 'use client';
 
-import { HeaderSimple } from '@/components/header-simple';
-import { FooterSimple } from '@/components/footer-simple';
+import { HeaderSimple } from '@/components/layout/header';
+import { FooterSimple } from '@/components/layout/footer';
 import { motion } from 'framer-motion';
 
 const roadmapFeatures = [

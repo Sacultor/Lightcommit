@@ -55,7 +55,7 @@ WALLET_PRIVATE_KEY=your_private_key_here
 ## 📝 部署后步骤
 
 1. **保存合约地址**：部署脚本会自动保存到 `deployments/` 目录
-2. **更新前端配置**：将合约地址添加到 `frontend/.env.local`
+2. **更新前端配置**：将合约地址添加到 `frontend/.env`
 3. **配置权限角色**：使用 Hardhat console 授予必要的角色
 4. **验证合约**（测试网/主网）：使用 `npx hardhat verify` 命令
 

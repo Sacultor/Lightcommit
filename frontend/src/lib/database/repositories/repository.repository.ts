@@ -1,6 +1,40 @@
+/**
+ * 仓库数据仓库（Repository Repository）
+ * 
+ * 功能：
+ * - 管理 repositories 表的所有数据操作
+ * - 提供仓库 CRUD 接口
+ * - 同步 GitHub 仓库信息到数据库
+ * 
+ * 数据表：repositories
+ * 字段：
+ * - id: UUID 主键
+ * - github_id: GitHub 仓库 ID（唯一）
+ * - name: 仓库名称
+ * - full_name: 仓库全名（owner/repo）
+ * - description: 描述
+ * - url: GitHub URL
+ * - is_private: 是否私有仓库
+ * - created_at: 创建时间
+ * - updated_at: 更新时间
+ * 
+ * 使用场景：
+ * - GitHub Webhook 同步仓库信息
+ * - 关联查询（贡献列表）
+ * - 仓库统计
+ * 
+ * 设计模式：
+ * - Repository Pattern（数据访问层）
+ * - 封装 Supabase 客户端操作
+ */
 import { getDatabaseClient } from '@/lib/database/index';
 import { Repository, CreateRepositoryData, UpdateRepositoryData } from '@/types/repository';
 
+/**
+ * 仓库数据仓库类
+ * 
+ * 提供所有与 repositories 表相关的数据操作
+ */
 export class RepositoryRepository {
   // 根据 ID 查找仓库
   static async findById(id: string): Promise<Repository | null> {

@@ -187,7 +187,7 @@ http://localhost:3000/erc8004/contributions
 
 ### Q5: GitHub 登录失败
 **A**:
-- 检查 .env.local 中的 Supabase 配置
+- 检查 .env 中的 Supabase 配置
 - 或跳过 GitHub 登录，直接测试钱包功能
 
 ---

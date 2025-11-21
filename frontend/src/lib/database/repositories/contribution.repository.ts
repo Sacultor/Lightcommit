@@ -1,3 +1,40 @@
+/**
+ * 贡献数据仓库（Contribution Repository）
+ * 
+ * 功能：
+ * - 管理 contributions 表的所有数据操作
+ * - 提供 CRUD 接口（创建、读取、更新、删除）
+ * - 支持复杂查询（筛选、分页、关联查询）
+ * - 提供统计功能
+ * 
+ * 数据表：contributions
+ * 字段：
+ * - id: UUID 主键
+ * - github_id: GitHub 事件 ID
+ * - user_id: 用户 ID（外键）
+ * - repository_id: 仓库 ID（外键）
+ * - type: 类型（commit/pull_request/issue）
+ * - status: 状态（pending/scored/minted/failed）
+ * - title: 标题
+ * - description: 描述
+ * - url: GitHub URL
+ * - score: 评分（0-100）
+ * - score_breakdown: 评分细节（JSON）
+ * - eligibility: 是否可上链（eligible/ineligible）
+ * - metadata: GitHub 原始数据（JSON）
+ * - created_at: 创建时间
+ * - updated_at: 更新时间
+ * 
+ * 使用场景：
+ * - API 路由查询贡献数据
+ * - GitHub Webhook 创建新贡献
+ * - 评分系统更新评分
+ * - ERC-8004 流程读取贡献详情
+ * 
+ * 设计模式：
+ * - Repository Pattern（数据访问层）
+ * - 隔离业务逻辑和数据库操作
+ */
 import { getDatabaseClient, query } from '@/lib/database/index';
 import {
   Contribution,
@@ -9,20 +46,25 @@ import {
   ContributionStats,
 } from '@/types/contribution';
 
-
-
-// 数据库查询结果接口
+/**
+ * 数据库查询结果接口（统计数据）
+ */
 interface DbContributionStats {
-  total: string;
-  minted: string;
-  pending: string;
-  minting: string;
-  failed: string;
-  commits: string;
-  pull_requests: string;
-  issues: string;
+  total: string;           // 总数（数据库返回字符串）
+  minted: string;          // 已铸造数量
+  pending: string;         // 待处理数量
+  minting: string;         // 铸造中数量
+  failed: string;          // 失败数量
+  commits: string;         // Commit 类型数量
+  pull_requests: string;   // PR 类型数量
+  issues: string;          // Issue 类型数量
 }
 
+/**
+ * 贡献数据仓库类
+ * 
+ * 提供所有与 contributions 表相关的数据操作
+ */
 export class ContributionRepository {
   // 通用查询（基于 Supabase 客户端）
   static async findMany(params: { status?: string; eligibility?: string; whereScoreNull?: boolean; limit?: number } = {}) {
@@ -61,6 +103,29 @@ export class ContributionRepository {
        LEFT JOIN repositories r ON c.repository_id = r.id
        WHERE c.github_id = $1`,
       [githubId],
+    );
+
+    return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;
+  }
+
+  /**
+   * 根据 Token ID 查找贡献
+   * 
+   * @param tokenId - NFT Token ID
+   * @returns 贡献对象，如果不存在则返回 null
+   * 
+   * 使用场景：
+   * - 获取 NFT 元数据时查询关联的贡献
+   * - 验证 Token ID 的有效性
+   */
+  static async findByTokenId(tokenId: string): Promise<Contribution | null> {
+    const result = await query(
+      `SELECT c.*, u.username, u.avatar_url, r.name as repo_name, r.full_name as repo_full_name
+       FROM contributions c
+       LEFT JOIN users u ON c.user_id = u.id
+       LEFT JOIN repositories r ON c.repository_id = r.id
+       WHERE c.token_id = $1`,
+      [tokenId],
     );
 
     return result.rows.length > 0 ? this.mapRowToContribution(result.rows[0]) : null;

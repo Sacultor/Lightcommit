@@ -1,10 +1,49 @@
+/**
+ * 用户数据仓库（User Repository）
+ * 
+ * 功能：
+ * - 管理 users 表的所有数据操作
+ * - 提供用户 CRUD 接口
+ * - 同步 GitHub 用户信息到数据库
+ * - 与认证系统集成
+ * 
+ * 数据表：users
+ * 字段：
+ * - id: UUID 主键（可关联 Supabase Auth，也可独立）
+ * - github_id: GitHub 用户 ID（唯一）
+ * - username: GitHub 用户名
+ * - name: 显示名称
+ * - email: 邮箱
+ * - avatar_url: 头像 URL
+ * - wallet_address: 钱包地址（用于 ERC-8004）
+ * - bio: 个人简介
+ * - location: 地理位置
+ * - website: 个人网站
+ * - created_at: 创建时间
+ * - updated_at: 更新时间
+ * 
+ * 使用场景：
+ * - GitHub OAuth 回调后同步用户信息
+ * - API 路由查询用户信息
+ * - 关联查询（贡献、仓库）
+ * 
+ * 设计模式：
+ * - Repository Pattern（数据访问层）
+ * - 封装 Supabase 客户端操作
+ * 
+ * 注意：
+ * - 现在使用 JWT 认证（不依赖 Supabase Auth）
+ * - users 表独立存储用户信息
+ * - github_id 作为唯一标识
+ */
 import { getDatabaseClient } from '@/lib/database/index';
 import { User, CreateUserData, UpdateUserData } from '@/types/user';
 import { AuthService } from '@/lib/services/auth.service';
 
 /**
- * 用户数据仓库
- * 与 Supabase Auth 集成，用于管理扩展的用户信息
+ * 用户数据仓库类
+ * 
+ * 提供所有与 users 表相关的数据操作
  */
 export class UserRepository {
   /**

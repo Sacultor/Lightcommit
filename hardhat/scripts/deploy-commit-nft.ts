@@ -57,7 +57,7 @@ async function main() {
   console.log(JSON.stringify(deploymentInfo, null, 2));
 
   // 将地址写入环境变量提示
-  console.log("\n🔧 请将以下内容添加到前端的 .env.local 文件:");
+  console.log("\n🔧 请将以下内容添加到前端的 .env 文件:");
   console.log(`NEXT_PUBLIC_CONTRACT_ADDRESS=${address}`);
   console.log(`NEXT_PUBLIC_CHAIN_ID=${deploymentInfo.chainId}`);
 }
